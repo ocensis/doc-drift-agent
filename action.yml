@@ -153,7 +153,9 @@ runs:
       if: always() && steps.gate.outputs.status != 'skipped'
       uses: actions/upload-artifact@v7
       with:
-        name: doc-drift
+        # Two jobs in one workflow can both use this action, and an artifact
+        # name collides across them.
+        name: doc-drift-${{ github.job }}-${{ inputs.semantic }}
         if-no-files-found: warn
         path: |
           ${{ steps.gate.outputs.artifacts-dir }}/bundle.json

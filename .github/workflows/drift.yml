@@ -62,7 +62,12 @@ jobs:
           upload-sarif: "false"
           version: .
         env:
+          # Both are required: OpenRouterSettings.from_environment() needs a key
+          # and a model, and supplying only the key fails the run with
+          # openrouter_model_missing rather than degrading.
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
+          OPENROUTER_PROVIDER: ${{ vars.OPENROUTER_PROVIDER }}
           # Langfuse is deliberately absent. `langfuse` is an optional extra
           # that uvx does not install here, so no client would exist to use the
           # credentials, and tracing belongs to eval runs and local development

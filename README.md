@@ -115,6 +115,13 @@ steps:
     with:
       fetch-depth: 0        # 门禁作用于 committed range，需要 base commit 在历史里
   - uses: ocensis/doc-drift-agent@v0        # 生产中固定到 tag 或 commit
+    with:
+      semantic: "true"
+    env:
+      # `--semantic` 需要 key 与模型两者；只给 key 会以
+      # openrouter_model_missing 失败（退出码 2）。
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      OPENROUTER_MODEL: ${{ vars.OPENROUTER_MODEL }}
 ```
 
 三个默认值是刻意选的：
