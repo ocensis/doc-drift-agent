@@ -76,14 +76,35 @@ runs:
         DRIFT_STATE: ${{ runner.temp }}/drift-agent-state
       run: |
         set -uo pipefail
-        if test -z "$DRIFT_BASE"; then
-          echo "::error::no base revision: pass the 'base' input outside pull_request events" >&2
-          exit 2
+        # Always publish the outputs, even on the paths that return early:
+        # a later step reading an empty exit code cannot tell "the gate did not
+        # run" from "the gate malfunctioned", and would report the wrong one.
+        emit() {
+          {
+            echo "exit-code=$1"
+            echo "status=$2"
+            echo "artifacts-dir=$DRIFT_ARTIFACTS"
+          } >> "$GITHUB_OUTPUT"
+        }
+
+        # A branch's first push reports an all-zero "before" SHA, and a tag or
+        # manual dispatch has none at all. There is no committed range to check,
+        # which is not a finding and not a malfunction.
+        if test -z "$DRIFT_BASE" || test "$DRIFT_BASE" = "0000000000000000000000000000000000000000"; then
+          echo "::notice::no base revision for this event; nothing to compare against"
+          emit 0 skipped
+          exit 0
         fi
+
         semantic_flag=()
         if test "$DRIFT_SEMANTIC" = "true"; then
           semantic_flag=(--semantic)
         fi
+
+        # GitHub runs composite `shell: bash` with -e, so the non-zero exit that
+        # *is* the gate's answer would kill this step before it could record it.
+        # The exit code is data here, not a failure.
+        set +e
         # The adapter writes its four artifacts outside the worktree and never
         # calls a forge API; every GitHub-facing action below is explicit.
         uvx --from "$DRIFT_SOURCE" drift-agent ci check \
@@ -91,14 +112,12 @@ runs:
           --since "$DRIFT_BASE" \
           --state-dir "$DRIFT_STATE" \
           --artifacts-dir "$DRIFT_ARTIFACTS" \
-          "${semantic_flag[@]}" | tee "$RUNNER_TEMP/drift-stdout.txt"
+          "${semantic_flag[@]}" 2>&1 | tee "$RUNNER_TEMP/drift-stdout.txt"
         code=${PIPESTATUS[0]}
+        set -e
+
         status=$(sed -n 's/^status: //p' "$RUNNER_TEMP/drift-stdout.txt" | head -1)
-        {
-          echo "exit-code=$code"
-          echo "status=${status:-unknown}"
-          echo "artifacts-dir=$DRIFT_ARTIFACTS"
-        } >> "$GITHUB_OUTPUT"
+        emit "$code" "${status:-unknown}"
         exit 0
 
     - name: Publish the job summary
@@ -112,14 +131,14 @@ runs:
         fi
 
     - name: Upload SARIF to code scanning
-      if: always() && inputs.upload-sarif == 'true'
+      if: always() && inputs.upload-sarif == 'true' && steps.gate.outputs.status != 'skipped'
       uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{ steps.gate.outputs.artifacts-dir }}/results.sarif
         category: doc-drift
 
     - name: Upload the raw artifacts
-      if: always()
+      if: always() && steps.gate.outputs.status != 'skipped'
       uses: actions/upload-artifact@v7
       with:
         name: doc-drift
@@ -139,6 +158,10 @@ runs:
         DRIFT_BLOCK: ${{ inputs.fail-on-drift }}
       run: |
         set -euo pipefail
+        if test -z "$DRIFT_EXIT"; then
+          echo "::error::the gate step never reported an exit code" >&2
+          exit 1
+        fi
         case "$DRIFT_EXIT" in
           0) echo "drift gate: $DRIFT_STATUS" ;;
           1)
