@@ -312,7 +312,7 @@ def _copy_locked_dependencies(*, source_root: Path, destination_python: Path) ->
             "-c",
             (
                 "import importlib.util;"
-                "import griffe,httpx,langgraph,markdown_it,mcp,platformdirs,pydantic,pytest,typer;"
+                "import griffe,httpx,markdown_it,mcp,platformdirs,pydantic,pytest,typer;"
                 "assert importlib.util.find_spec('drift_agent') is None"
             ),
         ],

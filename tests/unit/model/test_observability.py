@@ -161,7 +161,7 @@ class TestExplicitObservations:
     def test_seeded_root_and_explicit_child_context(self) -> None:
         fake = _inject()
         root = obs.start_observation(
-            name="blackboard.run",
+            name="pipeline.run",
             as_type="chain",
             input_data={"task": "inspect"},
             trace_id_seed="run-123",
@@ -176,7 +176,7 @@ class TestExplicitObservations:
         parent = obs.observation_context(root)
         assert parent == obs.ObservationContext("c" * 32, "0000000000000001")
         generation = obs.start_generation(
-            name="blackboard.review",
+            name="pipeline.review",
             trace_context=parent,
             model="requested-model",
             input_data={"lease_token": "must-not-leak", "candidate_id": "candidate-1"},
