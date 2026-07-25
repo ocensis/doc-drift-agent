@@ -222,7 +222,7 @@ def bundle_to_sarif(bundle: PublicBundleV3) -> dict[str, Any]:
             {
                 "tool": {
                     "driver": {
-                        "name": "doc-code-drift-agent",
+                        "name": "doc-drift-agent",
                         "semanticVersion": "0.1.0",
                         "rules": rules,
                     }

@@ -1,0 +1,159 @@
+name: Documentation drift gate
+description: >-
+  Run a read-only doc-code drift check over a committed range and surface the
+  findings as SARIF code-scanning annotations.
+author: doc-drift-agent
+
+branding:
+  icon: git-pull-request
+  color: purple
+
+inputs:
+  base:
+    description: >-
+      Revision the range starts from. Defaults to the pull request base SHA,
+      which is what makes the gate reproducible: the scope is a committed
+      range, never the working tree.
+    required: false
+    default: ""
+  repo:
+    description: Repository checkout to inspect.
+    required: false
+    default: ${{ github.workspace }}
+  semantic:
+    description: >-
+      Enable model-backed semantic detection. Off by default: it needs an API
+      key, which pull_request runs from forks do not have, and it costs money
+      per run. Structural detection is deterministic and free.
+    required: false
+    default: "false"
+  fail-on-drift:
+    description: >-
+      Fail the job when drift is found. Off by default so a new adopter gets
+      annotations before a blocked merge. A tool malfunction (exit code 2)
+      always fails regardless of this input.
+    required: false
+    default: "false"
+  upload-sarif:
+    description: >-
+      Upload results.sarif to GitHub code scanning. Needs
+      `permissions: security-events: write`.
+    required: false
+    default: "true"
+  version:
+    description: Package spec installed with uvx; pin this to a tag or commit.
+    required: false
+    default: git+https://github.com/yh/doc-drift-agent.git@main
+
+outputs:
+  status:
+    description: Bundle run status (clean, drift_found, stale, failed, ...).
+    value: ${{ steps.gate.outputs.status }}
+  exit-code:
+    description: "Adapter exit code: 0 clean/fixed, 1 findings, 2 malfunction."
+    value: ${{ steps.gate.outputs.exit-code }}
+  artifacts-dir:
+    description: Directory holding bundle.json, results.sarif, summary.md, pr-comment.md.
+    value: ${{ steps.gate.outputs.artifacts-dir }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install uv
+      uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+      with:
+        python-version: "3.13"
+
+    - name: Run the read-only drift gate
+      id: gate
+      shell: bash
+      env:
+        DRIFT_SOURCE: ${{ inputs.version }}
+        DRIFT_REPO: ${{ inputs.repo }}
+        DRIFT_BASE: ${{ inputs.base != '' && inputs.base || github.event.pull_request.base.sha }}
+        DRIFT_SEMANTIC: ${{ inputs.semantic }}
+        DRIFT_ARTIFACTS: ${{ runner.temp }}/drift-agent
+        DRIFT_STATE: ${{ runner.temp }}/drift-agent-state
+      run: |
+        set -uo pipefail
+        if test -z "$DRIFT_BASE"; then
+          echo "::error::no base revision: pass the 'base' input outside pull_request events" >&2
+          exit 2
+        fi
+        semantic_flag=()
+        if test "$DRIFT_SEMANTIC" = "true"; then
+          semantic_flag=(--semantic)
+        fi
+        # The adapter writes its four artifacts outside the worktree and never
+        # calls a forge API; every GitHub-facing action below is explicit.
+        uvx --from "$DRIFT_SOURCE" drift-agent ci check \
+          --repo "$DRIFT_REPO" \
+          --since "$DRIFT_BASE" \
+          --state-dir "$DRIFT_STATE" \
+          --artifacts-dir "$DRIFT_ARTIFACTS" \
+          "${semantic_flag[@]}" | tee "$RUNNER_TEMP/drift-stdout.txt"
+        code=${PIPESTATUS[0]}
+        status=$(sed -n 's/^status: //p' "$RUNNER_TEMP/drift-stdout.txt" | head -1)
+        {
+          echo "exit-code=$code"
+          echo "status=${status:-unknown}"
+          echo "artifacts-dir=$DRIFT_ARTIFACTS"
+        } >> "$GITHUB_OUTPUT"
+        exit 0
+
+    - name: Publish the job summary
+      if: always()
+      shell: bash
+      env:
+        DRIFT_SUMMARY: ${{ steps.gate.outputs.artifacts-dir }}/summary.md
+      run: |
+        if test -f "$DRIFT_SUMMARY"; then
+          cat "$DRIFT_SUMMARY" >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+    - name: Upload SARIF to code scanning
+      if: always() && inputs.upload-sarif == 'true'
+      uses: github/codeql-action/upload-sarif@v4
+      with:
+        sarif_file: ${{ steps.gate.outputs.artifacts-dir }}/results.sarif
+        category: doc-drift
+
+    - name: Upload the raw artifacts
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: doc-drift
+        if-no-files-found: warn
+        path: |
+          ${{ steps.gate.outputs.artifacts-dir }}/bundle.json
+          ${{ steps.gate.outputs.artifacts-dir }}/results.sarif
+          ${{ steps.gate.outputs.artifacts-dir }}/summary.md
+          ${{ steps.gate.outputs.artifacts-dir }}/pr-comment.md
+
+    - name: Apply the gate policy
+      if: always()
+      shell: bash
+      env:
+        DRIFT_EXIT: ${{ steps.gate.outputs.exit-code }}
+        DRIFT_STATUS: ${{ steps.gate.outputs.status }}
+        DRIFT_BLOCK: ${{ inputs.fail-on-drift }}
+      run: |
+        set -euo pipefail
+        case "$DRIFT_EXIT" in
+          0) echo "drift gate: $DRIFT_STATUS" ;;
+          1)
+            # A finding is a review signal. Blocking on it is the adopter's call,
+            # so it stays opt-in; the SARIF annotations land either way.
+            if test "$DRIFT_BLOCK" = "true"; then
+              echo "::error::documentation drift found ($DRIFT_STATUS)" >&2
+              exit 1
+            fi
+            echo "::warning::documentation drift found ($DRIFT_STATUS); not blocking"
+            ;;
+          *)
+            # stale/failed means the gate could not answer. That is never a
+            # finding and must not be silently downgraded to one.
+            echo "::error::drift gate malfunctioned ($DRIFT_STATUS, exit $DRIFT_EXIT)" >&2
+            exit 1
+            ;;
+        esac

@@ -173,7 +173,7 @@ def create_server(
         identities=identities,
     )
     server = DriftFastMCP(
-        "doc-code-drift-agent",
+        "doc-drift-agent",
         instructions=SERVER_INSTRUCTIONS,
     )
 

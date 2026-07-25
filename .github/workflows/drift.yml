@@ -1,0 +1,66 @@
+# Dogfooding: this repository runs its own gate against its own documentation.
+#
+# The split below is forced by GitHub, not by taste. A `pull_request` run from a
+# fork gets no secrets, so it cannot reach a model. Structural detection is
+# deterministic and needs no key, so every pull request gets it. Semantic
+# detection costs money and needs a key, so it only runs where one exists.
+name: Doc drift
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  security-events: write
+
+concurrency:
+  group: drift-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  structural:
+    name: structural (no key required)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # The gate scopes itself to a committed range, so it needs the history
+          # that contains the base commit.
+          fetch-depth: 0
+
+      - uses: ./
+        with:
+          base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          semantic: "false"
+          # Not blocking yet: the first dogfood run surfaced 23 pre-existing
+          # docstring findings in evaluation/benchmark_harness.py. Flip this to
+          # "true" once they are repaired, so the repository is held to the
+          # standard its own gate enforces.
+          fail-on-drift: "false"
+          version: .
+
+  semantic:
+    name: semantic (same-repo only)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: ./
+        with:
+          base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          semantic: "true"
+          # Semantic findings are advisory here: recall is still being measured
+          # (docs/evals), so they annotate rather than block.
+          fail-on-drift: "false"
+          upload-sarif: "false"
+          version: .
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+          LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL }}

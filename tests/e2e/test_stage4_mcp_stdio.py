@@ -68,7 +68,7 @@ def test_real_stdio_client_initializes_lists_and_calls_with_clean_protocol_stdou
             )
         )
 
-    assert initialized.serverInfo.name == "doc-code-drift-agent"
+    assert initialized.serverInfo.name == "doc-drift-agent"
     assert initialized.instructions == SERVER_INSTRUCTIONS
     assert [tool.name for tool in listed.tools] == ["check_drift", "repair_drift"]
     assert called.isError is False

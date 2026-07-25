@@ -92,11 +92,47 @@ uv run drift-agent ci check \
 ```
 
 成功发布后目录中固定包含 `bundle.json`、`results.sarif`、`summary.md` 和
-`pr-comment.md`；adapter 本身不上传产物、不发评论，也不执行 Git 写操作。可直接复用
-[GitHub Actions 示例](examples/github-actions/drift-check.yml) 与
-[pre-push 示例](examples/hooks/pre-push)。workflow 中的项目来源应替换为已审阅并固定的
-release 或 commit。CI 会拒绝任何含 symlink component 的目录；macOS 上手工使用 `/tmp`
-时应传物理路径 `/private/tmp/...`，示例 hook 已自动规范化为物理路径。
+`pr-comment.md`；**adapter 本身不上传产物、不发评论、不调用 forge API，也不执行 Git 写操作**
+（[stage-4 spec](docs/spec/stage-4-adapters-evaluation-spec.md) FR-035）。所有面向 GitHub 的
+动作都由外层 workflow 显式决定，这样 adapter 的行为在本地与 CI 中完全一致。
+
+CI 会拒绝任何含 symlink component 的目录；macOS 上手工使用 `/tmp` 时应传物理路径
+`/private/tmp/...`，示例 hook 已自动规范化为物理路径。
+
+### GitHub Actions
+
+仓库根目录的 [`action.yml`](action.yml) 是一个 composite action，把上面的调用、SARIF
+上传、job summary 和产物归档包在一起：
+
+```yaml
+permissions:
+  contents: read
+  security-events: write
+
+steps:
+  - uses: actions/checkout@v6
+    with:
+      fetch-depth: 0        # 门禁作用于 committed range，需要 base commit 在历史里
+  - uses: yh/doc-drift-agent@v0        # 生产中固定到 tag 或 commit
+```
+
+三个默认值是刻意选的：
+
+| 输入 | 默认 | 为什么 |
+|---|---|---|
+| `semantic` | `false` | 语义检测需要 API key，而 fork 的 `pull_request` 拿不到 secrets；结构化检测是确定性的、免费的，所以每个 PR 都能跑 |
+| `fail-on-drift` | `false` | 新接入方先拿到 SARIF 注解,而不是先被挡住合并;要阻断由接入方显式打开 |
+| `upload-sarif` | `true` | 发现应该出现在 diff 上,而不是埋在 job log 里 |
+
+**退出码 2 永远失败**,与 `fail-on-drift` 无关——它表示门禁没能给出答案（`stale`/`failed`），
+这不是一条 finding，不能被静默降级成 finding。
+
+本仓库自己吃自己的狗粮:[`.github/workflows/drift.yml`](.github/workflows/drift.yml) 对
+自己的文档跑同一个门禁,并按上面那条 fork/secrets 约束拆成结构化(全部 PR)与语义
+(仅同仓库)两个 job。
+
+原始 workflow 写法见 [GitHub Actions 示例](examples/github-actions/drift-check.yml),
+本地 hook 见 [pre-push 示例](examples/hooks/pre-push)。
 
 人工 decision 与 symbol alias 通过以下命令管理：
 
