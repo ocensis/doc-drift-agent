@@ -63,6 +63,8 @@ jobs:
           version: .
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
-          LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL }}
+          # Langfuse is deliberately absent. `langfuse` is an optional extra
+          # that uvx does not install here, so no client would exist to use the
+          # credentials, and tracing belongs to eval runs and local development
+          # rather than to a per-pull-request gate. Passing the variables anyway
+          # would advertise tracing that never happens.
