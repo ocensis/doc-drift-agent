@@ -136,8 +136,14 @@ steps:
 这不是一条 finding，不能被静默降级成 finding。
 
 本仓库自己吃自己的狗粮:[`.github/workflows/drift.yml`](.github/workflows/drift.yml) 对
-自己的文档跑同一个门禁,并按上面那条 fork/secrets 约束拆成结构化(全部 PR)与语义
-(仅同仓库)两个 job。
+自己的文档跑同一个门禁,拆成两个 job:
+
+| job | 触发 | 需要凭据 |
+|---|---|---|
+| 结构化 | 全部 PR + push 到 main | 否 |
+| 语义 | **仅同仓库 PR** | `OPENROUTER_API_KEY` + `OPENROUTER_MODEL`(缺任一即 `failed`) |
+
+语义只在 PR 上跑:它产出的是给 review 看的评论,代码合进 main 之后再标注没有收件人。fork PR 拿不到 secrets,所以也排除在外。单文件 scope 实测约 $0.002。
 
 原始 workflow 写法见 [GitHub Actions 示例](examples/github-actions/drift-check.yml),
 本地 hook 见 [pre-push 示例](examples/hooks/pre-push)。

@@ -43,10 +43,14 @@ jobs:
           fail-on-drift: "false"
           version: .
 
+  # Pull requests only. Semantic findings are review commentary, and there is
+  # nobody left to inform once a commit is on main -- paying a model to annotate
+  # merged code buys nothing. Forks are still excluded because they have no
+  # access to the credential.
   semantic:
-    name: semantic (same-repo only)
+    name: semantic (pull requests, same-repo only)
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - uses: actions/checkout@v6
         with:
@@ -54,7 +58,7 @@ jobs:
 
       - uses: ./
         with:
-          base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          base: ${{ github.event.pull_request.base.sha }}
           semantic: "true"
           # Semantic findings are advisory here: recall is still being measured
           # (docs/evals), so they annotate rather than block.
