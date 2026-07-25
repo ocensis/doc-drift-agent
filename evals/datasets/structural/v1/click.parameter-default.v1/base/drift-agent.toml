@@ -1,0 +1,14 @@
+[project]
+source_roots = ["src"]
+docs_roots = ["docs"]
+include = ["src/**/*.py", "docs/**/*.md"]
+exclude = []
+
+[truth]
+code_derived = ["docs/**"]
+design = []
+contract = []
+
+[validation]
+commands = []
+network = false

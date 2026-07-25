@@ -1,0 +1,66 @@
+[project]
+name = "doc-drift-agent"
+version = "0.1.0"
+description = "A bounded agent that repairs Python doc-code drift"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "griffe",
+  "httpx>=0.28,<1",
+  "jsonschema>=4.23,<5",
+  "markdown-it-py",
+  "mcp>=1.28.1,<2",
+  "platformdirs",
+  "pydantic>=2",
+  "tree-sitter==0.25.2",
+  "tree-sitter-typescript==0.23.2",
+  "typer",
+]
+
+[project.optional-dependencies]
+observability = ["langfuse>=4.14.1,<5"]
+
+[project.scripts]
+drift-agent = "drift_agent.cli:app"
+drift-agent-mcp = "drift_agent.adapters.mcp:main"
+
+[dependency-groups]
+dev = [
+  "mypy",
+  "pytest",
+  "ruff",
+  "types-jsonschema",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/drift_agent"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"evals/datasets/structural/v1" = "drift_agent/evaluation/data/structural/v1"
+"evals/datasets/stage3/v1" = "drift_agent/evaluation/data/stage3/v1"
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["evals/datasets"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "RUF"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+packages = ["drift_agent"]
+
+[[tool.mypy.overrides]]
+module = "langfuse.*"
+ignore_missing_imports = true
+follow_imports = "skip"

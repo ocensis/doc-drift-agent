@@ -1,0 +1,125 @@
+{
+  "budgets": {
+    "max_input_tokens_per_run": 20000,
+    "max_model_calls_per_run": 4,
+    "max_patch_attempts_per_finding": 2,
+    "max_validation_commands_per_run": 8,
+    "timeout_seconds": 120.0
+  },
+  "case_id": "executable.doctest-fail.v1",
+  "case_kind": "executable",
+  "coverage_tags": [
+    "executable",
+    "doctest",
+    "failing"
+  ],
+  "dataset_id": "stage3-v1",
+  "expected": {
+    "accounting": {
+      "input_tokens": 0,
+      "known_cost_nano_usd": 0,
+      "model_calls_by_profile": {},
+      "output_tokens": 0,
+      "patch_attempts": 0,
+      "repair_outcome": "not_applicable",
+      "validation_commands": 1
+    },
+    "changed_bytes": [],
+    "dispositions": [
+      "detected"
+    ],
+    "finding_multiset": [
+      {
+        "code_path": "drift-agent.toml",
+        "component": "doctest:docs/api.md",
+        "detector_id": "executable.example",
+        "detector_version": "1",
+        "doc_path": "docs/api.md",
+        "kind": "broken_example",
+        "new_value": {
+          "status": "failed"
+        },
+        "old_value": {
+          "arguments": [
+            "docs/api.md"
+          ],
+          "expected_status": "passed",
+          "kind": "doctest"
+        },
+        "symbol_identity": {
+          "category": "module_function",
+          "module": "unknown",
+          "name": "unknown",
+          "owner": null,
+          "version": "python-symbol-v1"
+        }
+      }
+    ],
+    "reason_codes": [
+      "validation_failed"
+    ],
+    "status": "drift_found"
+  },
+  "files": [
+    {
+      "origin": "project_authored",
+      "path": "base/docs/api.md",
+      "role": "base",
+      "sha256": "2493646cee36eaf14d74b8ad2a2631b32d2628d99ea69a3b6422676ad3247c4d",
+      "size_bytes": 94,
+      "target_path": "docs/api.md"
+    },
+    {
+      "origin": "project_authored",
+      "path": "base/drift-agent.toml",
+      "role": "base",
+      "sha256": "f080509e0800ce266824d1aef178b496de0a524c6a3419a25a4cbd6d88d19268",
+      "size_bytes": 238,
+      "target_path": "drift-agent.toml"
+    },
+    {
+      "origin": "project_authored",
+      "path": "base/src/demo/__init__.py",
+      "role": "base",
+      "sha256": "c9e77ef9d8266561859cdcb8507c430313bb2a6f11c12e873a6a96a94cb724e9",
+      "size_bytes": 31,
+      "target_path": "src/demo/__init__.py"
+    },
+    {
+      "origin": "project_authored",
+      "path": "base/src/demo/api.py",
+      "role": "base",
+      "sha256": "a64e7420f140d82bca6d4e3b316b768127bf94c8d7d1ef8c3bd5b9440aee421a",
+      "size_bytes": 48,
+      "target_path": "src/demo/api.py"
+    },
+    {
+      "origin": "project_authored",
+      "path": "current/src/demo/api.py",
+      "role": "current",
+      "sha256": "ea7d767fd1d14dc30121091208137f13d20f52ff3b5014eca85a7651f2439265",
+      "size_bytes": 109,
+      "target_path": "src/demo/api.py"
+    }
+  ],
+  "model_script": [],
+  "offline": true,
+  "operation": "check",
+  "provenance": {
+    "code_revision": "stage3-v1",
+    "copied_bytes": 0,
+    "doc_revision": "stage3-v1",
+    "kind": "project_authored",
+    "license_spdx": "LicenseRef-Project-Authored",
+    "repository": "project://doc-code-drift-agent",
+    "source_urls": []
+  },
+  "schema_version": 1,
+  "semantic_repair": false,
+  "validation_driver": "real",
+  "workspace": {
+    "deleted_paths": [],
+    "renames": [],
+    "staged_paths": []
+  }
+}

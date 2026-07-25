@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "case_id": "click.conflict.v1",
+  "project_family": "click",
+  "provenance": {
+    "kind": "project_authored",
+    "repository": "project://doc-code-drift-agent",
+    "code_revision": "structural-v1",
+    "doc_revision": "structural-v1",
+    "source_urls": [],
+    "license_spdx": "LicenseRef-Project-Authored",
+    "copied_bytes": 0
+  },
+  "files": [
+    {
+      "path": "base/drift-agent.toml",
+      "target_path": "drift-agent.toml",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "4e02bee05336af66730e0170539739f4a93d76f1b33907ca622cd26824a817a1",
+      "size_bytes": 216
+    },
+    {
+      "path": "base/src/click_eval/__init__.py",
+      "target_path": "src/click_eval/__init__.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "57e76add15fed344c90ef5fd9ec6c7c68d50edce4ab43471ba7017830ea15bdc",
+      "size_bytes": 40
+    },
+    {
+      "path": "base/src/click_eval/conflict.py",
+      "target_path": "src/click_eval/conflict.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "93d6069f06bdb77f722dbab4b73ba75b45e09d14cb2f4d501f90c08fe3696d1d",
+      "size_bytes": 390
+    },
+    {
+      "path": "base/docs/conflict.md",
+      "target_path": "docs/conflict.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "cf033f35cf9dc88e0ce14e4847081eecd078ab2e740b219cc8c505207560dc79",
+      "size_bytes": 87
+    },
+    {
+      "path": "current/src/click_eval/conflict.py",
+      "target_path": "src/click_eval/drawing.py",
+      "role": "current",
+      "origin": "project_authored",
+      "sha256": "c167e2434247949a5ce5b710942659756bf31a520c5176db026f26bf7e9fcfae",
+      "size_bytes": 419
+    }
+  ],
+  "workspace": {
+    "deleted_paths": [],
+    "renames": [
+      {
+        "old_path": "src/click_eval/conflict.py",
+        "new_path": "src/click_eval/drawing.py"
+      }
+    ],
+    "staged_paths": [
+      "src/click_eval/conflict.py",
+      "src/click_eval/drawing.py"
+    ]
+  },
+  "operation": "repair",
+  "coverage_tags": ["parameter", "default", "rename", "conflict"],
+  "expected": {
+    "status": "unresolved",
+    "finding_multiset": [
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "click_eval.drawing",
+          "owner": null,
+          "name": "draw",
+          "category": "module_function"
+        },
+        "kind": "parameter_default_changed",
+        "component": "color",
+        "old_value": "Constant(value='blue')",
+        "new_value": "Constant(value='red')",
+        "code_path": "src/click_eval/drawing.py",
+        "doc_path": "docs/conflict.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      },
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "click_eval.drawing",
+          "owner": null,
+          "name": "draw",
+          "category": "module_function"
+        },
+        "kind": "parameter_annotation_changed",
+        "component": "color",
+        "old_value": "Name(id='str', ctx=Load())",
+        "new_value": "Name(id='Color', ctx=Load())",
+        "code_path": "src/click_eval/drawing.py",
+        "doc_path": "docs/conflict.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      },
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "click_eval.drawing",
+          "owner": null,
+          "name": "draw",
+          "category": "module_function"
+        },
+        "kind": "symbol_reference_renamed",
+        "component": "symbol",
+        "old_value": "click_eval.conflict.paint",
+        "new_value": "click_eval.drawing.draw",
+        "code_path": "src/click_eval/drawing.py",
+        "doc_path": "docs/conflict.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      }
+    ],
+    "dispositions": ["unresolved", "unresolved", "unresolved"],
+    "reason_codes": [
+      "conflict.replacement",
+      "conflict.replacement",
+      "conflict.replacement"
+    ],
+    "changed_bytes": []
+  },
+  "model_calls": 0,
+  "offline": true
+}

@@ -1,0 +1,14 @@
+[project]
+source_roots = ["src"]
+docs_roots = ["docs"]
+include = ["src/**/*.py", "docs/**/*.md"]
+exclude = []
+
+[truth]
+code_derived = []
+design = []
+contract = []
+
+[validation]
+commands = ["python -m pytest tests/test_example.py -q"]
+network = false

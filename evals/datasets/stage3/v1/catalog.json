@@ -1,0 +1,56 @@
+{
+  "cases": [
+    {
+      "case_id": "executable.doctest-pass.v1",
+      "manifest": "executable.doctest-pass.v1/manifest.json",
+      "sha256": "7cc0a8d892866966e291e5c826113b3b8288b6c4fd153a41b0ef8225864c7247"
+    },
+    {
+      "case_id": "executable.doctest-fail.v1",
+      "manifest": "executable.doctest-fail.v1/manifest.json",
+      "sha256": "1640ebb307d47b89a799c9f006cd98b6d16fd198414f3a4c55aa994a898fc1ef"
+    },
+    {
+      "case_id": "executable.pytest-pass.v1",
+      "manifest": "executable.pytest-pass.v1/manifest.json",
+      "sha256": "5608490af215c97cdb2f34058ccabaefbbcc480f48becec1061d9ed465bbb06f"
+    },
+    {
+      "case_id": "executable.pytest-fail.v1",
+      "manifest": "executable.pytest-fail.v1/manifest.json",
+      "sha256": "b4ef00918769f0e7100d8d61fadd4f608e61864d153263d14197c17dedb69c8d"
+    },
+    {
+      "case_id": "executable.timeout.v1",
+      "manifest": "executable.timeout.v1/manifest.json",
+      "sha256": "b38af6360dc9f080489c7ca6542eebb905b814740688dbd42523e525cbb76f1d"
+    },
+    {
+      "case_id": "executable.unavailable.v1",
+      "manifest": "executable.unavailable.v1/manifest.json",
+      "sha256": "41d785236257405ebb363fceb739be24d9da673d18daaabca7a4be2690c3bc8e"
+    },
+    {
+      "case_id": "executable.budget-exhaustion.v1",
+      "manifest": "executable.budget-exhaustion.v1/manifest.json",
+      "sha256": "d507d5ebbb173b964b9f2255c22058b275cf9cc7cbefed180d1a530242eb723a"
+    },
+    {
+      "case_id": "semantic.fast-success.v1",
+      "manifest": "semantic.fast-success.v1/manifest.json",
+      "sha256": "4c0b891c42e1d33f7c275858cf58fc7c16bd4e57c359a986c8e7c25ecc6764a3"
+    },
+    {
+      "case_id": "semantic.strong-success.v1",
+      "manifest": "semantic.strong-success.v1/manifest.json",
+      "sha256": "04ac15067fb6b35756fbd4487884563751b6327ebc73a8cb5321dbd2bc334237"
+    },
+    {
+      "case_id": "semantic.two-failures-abstain.v1",
+      "manifest": "semantic.two-failures-abstain.v1/manifest.json",
+      "sha256": "f2a8b727432b5db3b6065f7ad0756ba9db1d55894c2362da829cc5c7c5c06c39"
+    }
+  ],
+  "dataset_id": "stage3-v1",
+  "schema_version": 1
+}

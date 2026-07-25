@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "case_id": "pydantic.google-returns.v1",
+  "project_family": "pydantic",
+  "provenance": {
+    "kind": "project_authored",
+    "repository": "project://doc-code-drift-agent",
+    "code_revision": "structural-v1",
+    "doc_revision": "structural-v1",
+    "source_urls": [],
+    "license_spdx": "LicenseRef-Project-Authored",
+    "copied_bytes": 0
+  },
+  "files": [
+    {
+      "path": "base/drift-agent.toml",
+      "target_path": "drift-agent.toml",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "4ab7b222e60e89dc7867ff2cda8aae49b0d2df15e6f9e5027b3fd5f7142a72d4",
+      "size_bytes": 220
+    },
+    {
+      "path": "base/src/pydantic_eval/__init__.py",
+      "target_path": "src/pydantic_eval/__init__.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "58e6f4bf54853b08c81798f8a38a530f8a44c7721ff1cc3cf18f629d1e717151",
+      "size_bytes": 45
+    },
+    {
+      "path": "base/src/pydantic_eval/api.py",
+      "target_path": "src/pydantic_eval/api.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "42fe18b280021524042355ea835cd8eb18d4fed6dd5d21b1bd60613e3a5f6b9e",
+      "size_bytes": 130
+    },
+    {
+      "path": "current/src/pydantic_eval/api.py",
+      "target_path": "src/pydantic_eval/api.py",
+      "role": "current",
+      "origin": "project_authored",
+      "sha256": "7f356c0af10738eb43a2355f816b05ffd9c8c930918d3b6d35f2544089d387e8",
+      "size_bytes": 127
+    },
+    {
+      "path": "expected/src/pydantic_eval/api.py",
+      "target_path": "src/pydantic_eval/api.py",
+      "role": "expected",
+      "origin": "project_authored",
+      "sha256": "0a995cb2a511ed3b889767c22bd2dad20aa38a1b6e55d294698972e59758217f",
+      "size_bytes": 125
+    },
+    {
+      "path": "base/docs/README.md",
+      "target_path": "docs/README.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "4d92e587c597281b59c282c950a4de7521286cd87b3c9ea48d9c5b84a28d64ba",
+      "size_bytes": 35
+    }
+  ],
+  "workspace": {
+    "deleted_paths": [],
+    "renames": []
+  },
+  "operation": "repair",
+  "coverage_tags": ["google_returns", "docstring_ast_guard"],
+  "expected": {
+    "status": "fixed",
+    "finding_multiset": [
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "pydantic_eval.api",
+          "owner": null,
+          "name": "model_name",
+          "category": "module_function"
+        },
+        "kind": "docstring_return_changed",
+        "component": "return",
+        "old_value": "Name(id='bytes', ctx=Load())",
+        "new_value": "Name(id='str', ctx=Load())",
+        "code_path": "src/pydantic_eval/api.py",
+        "doc_path": "src/pydantic_eval/api.py",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      }
+    ],
+    "dispositions": ["fixed"],
+    "reason_codes": ["validated"],
+    "changed_bytes": [
+      {
+        "path": "src/pydantic_eval/api.py",
+        "before_sha256": "7f356c0af10738eb43a2355f816b05ffd9c8c930918d3b6d35f2544089d387e8",
+        "after_sha256": "0a995cb2a511ed3b889767c22bd2dad20aa38a1b6e55d294698972e59758217f",
+        "before_size_bytes": 127,
+        "after_size_bytes": 125,
+        "before_mode": "0644",
+        "after_mode": "0644"
+      }
+    ]
+  },
+  "model_calls": 0,
+  "offline": true
+}

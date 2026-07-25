@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "case_id": "rich.incomplete-declaration-reject.v1",
+  "project_family": "rich",
+  "provenance": {
+    "kind": "project_authored",
+    "repository": "project://doc-code-drift-agent",
+    "code_revision": "structural-v1",
+    "doc_revision": "structural-v1",
+    "source_urls": [],
+    "license_spdx": "LicenseRef-Project-Authored",
+    "copied_bytes": 0
+  },
+  "files": [
+    {
+      "path": "base/drift-agent.toml",
+      "target_path": "drift-agent.toml",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "4e02bee05336af66730e0170539739f4a93d76f1b33907ca622cd26824a817a1",
+      "size_bytes": 216
+    },
+    {
+      "path": "base/src/rich_eval/__init__.py",
+      "target_path": "src/rich_eval/__init__.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "f405fcb25da48c98c6333ef681be5578c79f33044fb45118d4f403601a875a5a",
+      "size_bytes": 41
+    },
+    {
+      "path": "base/src/rich_eval/api.py",
+      "target_path": "src/rich_eval/api.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "5d47761a4d89873d5e4484598f088fc119a73ce1a7329019b718352bf399c028",
+      "size_bytes": 55
+    },
+    {
+      "path": "current/src/rich_eval/api.py",
+      "target_path": "src/rich_eval/api.py",
+      "role": "current",
+      "origin": "project_authored",
+      "sha256": "d64e4306fa2b4fedbdce000138b40f3b65c9a5fcd204d505ab8b62b5fbfee77f",
+      "size_bytes": 47
+    },
+    {
+      "path": "base/docs/guide.md",
+      "target_path": "docs/guide.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "5c72b1310cab89022bbe5fa5cc42e936fd81540b94f8d089d5de2184fa1615f4",
+      "size_bytes": 77
+    }
+  ],
+  "workspace": {
+    "deleted_paths": [],
+    "renames": []
+  },
+  "operation": "repair",
+  "coverage_tags": ["delete", "conservative_rejection"],
+  "expected": {
+    "status": "unresolved",
+    "finding_multiset": [
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "rich_eval.api",
+          "owner": null,
+          "name": "legacy_render",
+          "category": "module_function"
+        },
+        "kind": "symbol_reference_deleted",
+        "component": "symbol",
+        "old_value": "rich_eval.api.legacy_render",
+        "new_value": {"type": "missing_symbol"},
+        "code_path": "src/rich_eval/api.py",
+        "doc_path": "docs/guide.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      }
+    ],
+    "dispositions": ["unresolved"],
+    "reason_codes": ["unsupported.incomplete_declaration"],
+    "changed_bytes": []
+  },
+  "model_calls": 0,
+  "offline": true
+}

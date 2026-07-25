@@ -1,0 +1,14 @@
+[project]
+source_roots = ["src"]
+docs_roots = ["docs"]
+include = ["src/**/*.py", "docs/**/*.md"]
+exclude = ["**/generated/**", "**/.venv/**"]
+
+[truth]
+code_derived = ["docs/arch/**"]
+design = ["docs/superpowers/**"]
+contract = ["docs/spec/**"]
+
+[validation]
+commands = []
+network = false

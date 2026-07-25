@@ -1,0 +1,159 @@
+{
+  "budgets": {
+    "max_input_tokens_per_run": 20000,
+    "max_model_calls_per_run": 4,
+    "max_patch_attempts_per_finding": 2,
+    "max_validation_commands_per_run": 8,
+    "timeout_seconds": 120.0
+  },
+  "case_id": "semantic.two-failures-abstain.v1",
+  "case_kind": "semantic",
+  "coverage_tags": [
+    "semantic",
+    "abstention"
+  ],
+  "dataset_id": "stage3-v1",
+  "expected": {
+    "accounting": {
+      "input_tokens": 14,
+      "known_cost_nano_usd": 20000,
+      "model_calls_by_profile": {
+        "fast": 1,
+        "strong": 1
+      },
+      "output_tokens": 6,
+      "patch_attempts": 2,
+      "repair_outcome": "abstained",
+      "validation_commands": 0
+    },
+    "changed_bytes": [],
+    "dispositions": [
+      "unresolved"
+    ],
+    "finding_multiset": [
+      {
+        "code_path": "src/demo/api.py",
+        "component": "return.literal",
+        "detector_id": "semantic.constant_return",
+        "detector_version": "1",
+        "doc_path": "docs/api.md",
+        "kind": "semantic_direct_mismatch",
+        "new_value": {
+          "predicate": "return_literal",
+          "value": {
+            "type": "int",
+            "value": 2
+          }
+        },
+        "old_value": {
+          "mode": "direct",
+          "predicate": "return_literal",
+          "value": {
+            "type": "int",
+            "value": 1
+          }
+        },
+        "symbol_identity": {
+          "category": "module_function",
+          "module": "demo.api",
+          "name": "answer",
+          "owner": null,
+          "version": "python-symbol-v1"
+        }
+      }
+    ],
+    "reason_codes": [
+      "semantic_validation_failed"
+    ],
+    "status": "unresolved"
+  },
+  "files": [
+    {
+      "origin": "project_authored",
+      "path": "base/docs/api.md",
+      "role": "base",
+      "sha256": "1e00365e3f29458dfa6dd75fbddc949bac7937ed63ff9a7280fbe754bc5fe958",
+      "size_bytes": 76,
+      "target_path": "docs/api.md"
+    },
+    {
+      "origin": "project_authored",
+      "path": "base/drift-agent.toml",
+      "role": "base",
+      "sha256": "4e02bee05336af66730e0170539739f4a93d76f1b33907ca622cd26824a817a1",
+      "size_bytes": 216,
+      "target_path": "drift-agent.toml"
+    },
+    {
+      "origin": "project_authored",
+      "path": "base/src/demo/__init__.py",
+      "role": "base",
+      "sha256": "c9e77ef9d8266561859cdcb8507c430313bb2a6f11c12e873a6a96a94cb724e9",
+      "size_bytes": 31,
+      "target_path": "src/demo/__init__.py"
+    },
+    {
+      "origin": "project_authored",
+      "path": "base/src/demo/api.py",
+      "role": "base",
+      "sha256": "f085b9d08ebf2a773871c0ced0d365bcd38772963348da042870e103be7929b1",
+      "size_bytes": 34,
+      "target_path": "src/demo/api.py"
+    },
+    {
+      "origin": "project_authored",
+      "path": "current/src/demo/api.py",
+      "role": "current",
+      "sha256": "ca4981a673178d05a053f4053f2ca0ad3382a2a46414bb900f094921feb7e6eb",
+      "size_bytes": 34,
+      "target_path": "src/demo/api.py"
+    }
+  ],
+  "model_script": [
+    {
+      "completion_tokens": 3,
+      "cost_nano_usd": 10000,
+      "output": {
+        "confidence": "high",
+        "decision": "replace",
+        "rationale": "The local code fact requires this exact literal.",
+        "replacement_text": "2"
+      },
+      "profile": "fast",
+      "prompt_tokens": 7,
+      "request_sha256": "699d45e291bd7ca8fabe466078edeebb524978651541894639a95426702b1f3e"
+    },
+    {
+      "completion_tokens": 3,
+      "cost_nano_usd": 10000,
+      "output": {
+        "confidence": "high",
+        "decision": "replace",
+        "rationale": "The local code fact requires this exact literal.",
+        "replacement_text": "2"
+      },
+      "profile": "strong",
+      "prompt_tokens": 7,
+      "request_sha256": "34fc8714382917a910e3e3f420078bdea5152432bc039b8a9b891182d4b3c6b8"
+    }
+  ],
+  "offline": true,
+  "operation": "repair",
+  "provenance": {
+    "code_revision": "stage3-v1",
+    "copied_bytes": 0,
+    "doc_revision": "stage3-v1",
+    "kind": "project_authored",
+    "license_spdx": "LicenseRef-Project-Authored",
+    "repository": "project://doc-code-drift-agent",
+    "source_urls": []
+  },
+  "schema_version": 1,
+  "semantic_repair": true,
+  "validation_driver": "semantic_fail_twice",
+  "workspace": {
+    "deleted_paths": [],
+    "renames": [],
+    "staged_paths": []
+  }
+}

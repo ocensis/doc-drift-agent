@@ -1,0 +1,1 @@
+"""Synthetic Rich evaluation package."""

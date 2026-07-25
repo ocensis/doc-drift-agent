@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "case_id": "rich.iteration-speed-column.v1",
+  "project_family": "rich",
+  "provenance": {
+    "kind": "historical",
+    "repository": "https://github.com/Textualize/rich",
+    "code_revision": "669b5006b3bbfe6fb023d76cda62c59773141cf5",
+    "doc_revision": "669b5006b3bbfe6fb023d76cda62c59773141cf5",
+    "source_urls": [
+      "https://github.com/Textualize/rich/commit/669b5006b3bbfe6fb023d76cda62c59773141cf5"
+    ],
+    "license_spdx": "MIT",
+    "copied_bytes": 105
+  },
+  "files": [
+    {
+      "path": "base/drift-agent.toml",
+      "target_path": "drift-agent.toml",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "4e02bee05336af66730e0170539739f4a93d76f1b33907ca622cd26824a817a1",
+      "size_bytes": 216
+    },
+    {
+      "path": "base/src/rich/__init__.py",
+      "target_path": "src/rich/__init__.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "df11a964732670fb2a59934ac7911ddc9ddf02eec00e038484fbcb7723128459",
+      "size_bytes": 60
+    },
+    {
+      "path": "base/src/rich/progress.py",
+      "target_path": "src/rich/progress.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "05730e840083ac9d46cf130865faa20bec524c5c82daf8f105cd420b7e29d1eb",
+      "size_bytes": 99
+    },
+    {
+      "path": "current/src/rich/progress.py",
+      "target_path": "src/rich/progress.py",
+      "role": "current",
+      "origin": "project_authored",
+      "sha256": "777c87e3226e6b1f69eb3c42f76cfdaa5ad0c3a1a163bd94cd044ae42c257e16",
+      "size_bytes": 66
+    },
+    {
+      "path": "base/docs/progress.md",
+      "target_path": "docs/progress.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "10c653fff554d23706c5c60555f0923d8486ed3ae2e4bf9a51ea946e3ea39345",
+      "size_bytes": 96
+    },
+    {
+      "path": "base/provenance/progress.rst",
+      "target_path": "provenance/progress.rst",
+      "role": "base",
+      "origin": "upstream",
+      "sha256": "cd66028d723c02ac139553982cf771b95fab647299634d287d552f4663cb516f",
+      "size_bytes": 105
+    }
+  ],
+  "workspace": {
+    "deleted_paths": [],
+    "renames": []
+  },
+  "operation": "repair",
+  "coverage_tags": ["delete", "historical", "conservative_rejection"],
+  "expected": {
+    "status": "unresolved",
+    "finding_multiset": [
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "rich.progress",
+          "owner": null,
+          "name": "IterationSpeedColumn",
+          "category": "class"
+        },
+        "kind": "unsupported",
+        "component": "symbol",
+        "old_value": "rich.progress.IterationSpeedColumn",
+        "new_value": {"type": "missing_symbol"},
+        "code_path": "src/rich/progress.py",
+        "doc_path": "docs/progress.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      }
+    ],
+    "dispositions": ["unresolved"],
+    "reason_codes": ["unsupported.symbol_kind"],
+    "changed_bytes": []
+  },
+  "model_calls": 0,
+  "offline": true
+}

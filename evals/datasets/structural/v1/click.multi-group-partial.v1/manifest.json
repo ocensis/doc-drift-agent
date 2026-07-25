@@ -1,0 +1,181 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "case_id": "click.multi-group-partial.v1",
+  "project_family": "click",
+  "provenance": {
+    "kind": "project_authored",
+    "repository": "project://doc-code-drift-agent",
+    "code_revision": "structural-v1",
+    "doc_revision": "structural-v1",
+    "source_urls": [],
+    "license_spdx": "LicenseRef-Project-Authored",
+    "copied_bytes": 0
+  },
+  "files": [
+    {
+      "path": "base/drift-agent.toml",
+      "target_path": "drift-agent.toml",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "2eb706929ec60130e4754de40407b57102f4bb2f05a5df2b0a9f954559ae1643",
+      "size_bytes": 241
+    },
+    {
+      "path": "base/src/click_eval/__init__.py",
+      "target_path": "src/click_eval/__init__.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "de5fc4ef55d3b76dd893f210b0de0bcb0c936b521d908f79ede09ad178e3c704",
+      "size_bytes": 43
+    },
+    {
+      "path": "base/src/click_eval/legacy.py",
+      "target_path": "src/click_eval/legacy.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "74f3721c2fe65949e18156a90f3c5d3780ba6256f8ef7d3cbf2e1f41ac7d26e0",
+      "size_bytes": 459
+    },
+    {
+      "path": "base/src/click_eval/design.py",
+      "target_path": "src/click_eval/design.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "e105e3c49d22a07429203fc73bc3672f9edd99c34e5c89c0c68e1a11259b892e",
+      "size_bytes": 52
+    },
+    {
+      "path": "base/docs/commands.md",
+      "target_path": "docs/commands.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "5a0398a36de1507b36692bb784a8669f524f03e584b8a378bdd38661650f2f94",
+      "size_bytes": 169
+    },
+    {
+      "path": "base/docs/design.md",
+      "target_path": "docs/design.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "2f6370342530daa485764bd2d432ce75cc55cc4972f2563f5a42cab528376761",
+      "size_bytes": 91
+    },
+    {
+      "path": "current/src/click_eval/current.py",
+      "target_path": "src/click_eval/current.py",
+      "role": "current",
+      "origin": "project_authored",
+      "sha256": "5c12f4b058355ff7075a31f1eff38793ba4994d13307e1b388726a42711b4a0a",
+      "size_bytes": 408
+    },
+    {
+      "path": "current/src/click_eval/design.py",
+      "target_path": "src/click_eval/design.py",
+      "role": "current",
+      "origin": "project_authored",
+      "sha256": "ee5e9b4937fd4570113899975e6b6b313431a9e3225e925bb555e94e431a83ef",
+      "size_bytes": 51
+    },
+    {
+      "path": "expected/docs/commands.md",
+      "target_path": "docs/commands.md",
+      "role": "expected",
+      "origin": "project_authored",
+      "sha256": "a9fa2c902d8e943a5c445f46f96ed03eb392e2e8bfdc90fe9cfccceae38a5e59",
+      "size_bytes": 82
+    }
+  ],
+  "workspace": {
+    "deleted_paths": [],
+    "renames": [
+      {
+        "old_path": "src/click_eval/legacy.py",
+        "new_path": "src/click_eval/current.py"
+      }
+    ],
+    "staged_paths": [
+      "src/click_eval/legacy.py",
+      "src/click_eval/current.py"
+    ]
+  },
+  "operation": "repair",
+  "coverage_tags": [
+    "rename",
+    "delete",
+    "same_file_multi",
+    "cross_file_multi",
+    "partial"
+  ],
+  "expected": {
+    "status": "partial",
+    "finding_multiset": [
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "click_eval.current",
+          "owner": null,
+          "name": "publish",
+          "category": "module_function"
+        },
+        "kind": "symbol_reference_renamed",
+        "component": "symbol",
+        "old_value": "click_eval.legacy.deploy",
+        "new_value": "click_eval.current.publish",
+        "code_path": "src/click_eval/current.py",
+        "doc_path": "docs/commands.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      },
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "click_eval.legacy",
+          "owner": null,
+          "name": "retired",
+          "category": "module_function"
+        },
+        "kind": "symbol_reference_deleted",
+        "component": "symbol",
+        "old_value": "click_eval.legacy.retired",
+        "new_value": {"type": "missing_symbol"},
+        "code_path": "src/click_eval/legacy.py",
+        "doc_path": "docs/commands.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      },
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "click_eval.design",
+          "owner": null,
+          "name": "preview",
+          "category": "module_function"
+        },
+        "kind": "parameter_default_changed",
+        "component": "format",
+        "old_value": "Constant(value='plain')",
+        "new_value": "Constant(value='rich')",
+        "code_path": "src/click_eval/design.py",
+        "doc_path": "docs/design.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      }
+    ],
+    "dispositions": ["fixed", "fixed", "needs_approval"],
+    "reason_codes": ["validated", "validated", "truth_requires_approval"],
+    "changed_bytes": [
+      {
+        "path": "docs/commands.md",
+        "before_sha256": "5a0398a36de1507b36692bb784a8669f524f03e584b8a378bdd38661650f2f94",
+        "after_sha256": "a9fa2c902d8e943a5c445f46f96ed03eb392e2e8bfdc90fe9cfccceae38a5e59",
+        "before_size_bytes": 169,
+        "after_size_bytes": 82,
+        "before_mode": "0644",
+        "after_mode": "0644"
+      }
+    ]
+  },
+  "model_calls": 0,
+  "offline": true
+}

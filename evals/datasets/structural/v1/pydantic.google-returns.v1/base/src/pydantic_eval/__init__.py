@@ -1,0 +1,1 @@
+"""Synthetic Pydantic evaluation package."""

@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "case_id": "httpx.responseclosed-streamclosed.v1",
+  "project_family": "httpx",
+  "provenance": {
+    "kind": "historical",
+    "repository": "https://github.com/encode/httpx",
+    "code_revision": "9b8f5af7596ab2208375a4d26b5b585d51b82b01",
+    "doc_revision": "7d3a5347a9717169c00c73b71ba7c560e9a04443",
+    "source_urls": [
+      "https://github.com/encode/httpx/commit/9b8f5af7596ab2208375a4d26b5b585d51b82b01",
+      "https://github.com/encode/httpx/commit/7d3a5347a9717169c00c73b71ba7c560e9a04443"
+    ],
+    "license_spdx": "BSD-3-Clause",
+    "copied_bytes": 3751
+  },
+  "files": [
+    {
+      "path": "base/drift-agent.toml",
+      "target_path": "drift-agent.toml",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "4e02bee05336af66730e0170539739f4a93d76f1b33907ca622cd26824a817a1",
+      "size_bytes": 216
+    },
+    {
+      "path": "base/src/httpx/__init__.py",
+      "target_path": "src/httpx/__init__.py",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "e8ec5d64bad165994b120ded4cda45a3575fd6820c1c4a29cc17a8149d570f94",
+      "size_bytes": 58
+    },
+    {
+      "path": "base/src/httpx/_exceptions.py",
+      "target_path": "src/httpx/_exceptions.py",
+      "role": "base",
+      "origin": "upstream",
+      "sha256": "b1a0236f2bcb4583dfa2fc72eef1b8f990846cb41ebdbe9a6e9ca83f0dd1a162",
+      "size_bytes": 1886
+    },
+    {
+      "path": "current/src/httpx/_exceptions.py",
+      "target_path": "src/httpx/_exceptions.py",
+      "role": "current",
+      "origin": "upstream",
+      "sha256": "5c7f82b3740b8896de2e64635b02ced1f0feb7d90fdb12aa82617941b02d7737",
+      "size_bytes": 1865
+    },
+    {
+      "path": "base/docs/exceptions.md",
+      "target_path": "docs/exceptions.md",
+      "role": "base",
+      "origin": "project_authored",
+      "sha256": "c708a71d9e6d7e8a3c05be5cd681d9ccbec6031f9ebfd868ef544a10dc620f3a",
+      "size_bytes": 91
+    }
+  ],
+  "workspace": {
+    "deleted_paths": [],
+    "renames": []
+  },
+  "operation": "repair",
+  "coverage_tags": ["rename", "historical", "conservative_rejection"],
+  "expected": {
+    "status": "unresolved",
+    "finding_multiset": [
+      {
+        "symbol_identity": {
+          "version": "python-symbol-v1",
+          "module": "httpx._exceptions",
+          "owner": null,
+          "name": "StreamClosed",
+          "category": "exception_class"
+        },
+        "kind": "unsupported",
+        "component": "symbol",
+        "old_value": "httpx.ResponseClosed",
+        "new_value": "httpx.StreamClosed",
+        "code_path": "src/httpx/_exceptions.py",
+        "doc_path": "docs/exceptions.md",
+        "detector_id": "structural.signature",
+        "detector_version": "2"
+      }
+    ],
+    "dispositions": ["unresolved"],
+    "reason_codes": ["unsupported.symbol_kind"],
+    "changed_bytes": []
+  },
+  "model_calls": 0,
+  "offline": true
+}

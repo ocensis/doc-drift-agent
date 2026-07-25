@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "dataset_id": "structural-v1",
+  "cases": [
+    {
+      "case_id": "click.parameter-default.v1",
+      "manifest": "click.parameter-default.v1/manifest.json",
+      "sha256": "a3f09ea0256ac655227c0d7590890cce487de28eedffa482a5f4872a9c799ede"
+    },
+    {
+      "case_id": "click.multi-group-partial.v1",
+      "manifest": "click.multi-group-partial.v1/manifest.json",
+      "sha256": "a864b05ada9b022967b20741f8dda1f3e4990dde7f69ccd49f79dd66a9d92a3f"
+    },
+    {
+      "case_id": "click.conflict.v1",
+      "manifest": "click.conflict.v1/manifest.json",
+      "sha256": "5b5e83861851680bcba1face8c7b272cd066f74d483a6aecf8d5dc24670564c7"
+    },
+    {
+      "case_id": "httpx.responseclosed-streamclosed.v1",
+      "manifest": "httpx.responseclosed-streamclosed.v1/manifest.json",
+      "sha256": "e82d31dbc77a47660592cc3f530692d2c3e347678a6905ba3cd040dee20b2e6b"
+    },
+    {
+      "case_id": "pydantic.apply-validators-field-name.v1",
+      "manifest": "pydantic.apply-validators-field-name.v1/manifest.json",
+      "sha256": "a782c2e32bee6b2d64006a60000ba8ba2c3c726a2bd6b505081a1a45e52d9c31"
+    },
+    {
+      "case_id": "pydantic.google-returns.v1",
+      "manifest": "pydantic.google-returns.v1/manifest.json",
+      "sha256": "0014b28033405b49d80902bb1dd5d263978dece5ea594170aae397b1a1638be1"
+    },
+    {
+      "case_id": "rich.iteration-speed-column.v1",
+      "manifest": "rich.iteration-speed-column.v1/manifest.json",
+      "sha256": "65acb28ee254d5d4ef132549e4b55245cc6283ddfa46a3696b39f95489c00feb"
+    },
+    {
+      "case_id": "rich.incomplete-declaration-reject.v1",
+      "manifest": "rich.incomplete-declaration-reject.v1/manifest.json",
+      "sha256": "1a51028b663d88fb38db4dd75622488bafa4ed010bff9b9ed7ced423a607d00d"
+    }
+  ]
+}
