@@ -14,6 +14,8 @@ on:
 permissions:
   contents: read
   security-events: write
+  # github/codeql-action reads the workflow run it is uploading for.
+  actions: read
 
 concurrency:
   group: drift-${{ github.ref }}

@@ -130,12 +130,24 @@ runs:
           cat "$DRIFT_SUMMARY" >> "$GITHUB_STEP_SUMMARY"
         fi
 
+    # Code scanning is not available on every plan (a private repository without
+    # Advanced Security rejects the upload). That is a property of the
+    # environment, not an answer about the documentation, so it must not decide
+    # the job. The SARIF file is still archived below either way.
     - name: Upload SARIF to code scanning
+      id: sarif
       if: always() && inputs.upload-sarif == 'true' && steps.gate.outputs.status != 'skipped'
+      continue-on-error: true
       uses: github/codeql-action/upload-sarif@v4
       with:
         sarif_file: ${{ steps.gate.outputs.artifacts-dir }}/results.sarif
         category: doc-drift
+
+    - name: Note an unavailable code scanning upload
+      if: always() && steps.sarif.outcome == 'failure'
+      shell: bash
+      run: |
+        echo "::notice::code scanning upload unavailable; results.sarif is attached as an artifact instead"
 
     - name: Upload the raw artifacts
       if: always() && steps.gate.outputs.status != 'skipped'

@@ -108,6 +108,7 @@ CI 会拒绝任何含 symlink component 的目录；macOS 上手工使用 `/tmp`
 permissions:
   contents: read
   security-events: write
+  actions: read
 
 steps:
   - uses: actions/checkout@v6
@@ -122,7 +123,7 @@ steps:
 |---|---|---|
 | `semantic` | `false` | 语义检测需要 API key，而 fork 的 `pull_request` 拿不到 secrets；结构化检测是确定性的、免费的，所以每个 PR 都能跑 |
 | `fail-on-drift` | `false` | 新接入方先拿到 SARIF 注解,而不是先被挡住合并;要阻断由接入方显式打开 |
-| `upload-sarif` | `true` | 发现应该出现在 diff 上,而不是埋在 job log 里 |
+| `upload-sarif` | `true` | 发现应该出现在 diff 上,而不是埋在 job log 里。私有仓库没有 Advanced Security 时上传会被拒——那是环境能力而非门禁结论，所以该步骤 `continue-on-error`，SARIF 仍作为 artifact 归档 |
 
 **退出码 2 永远失败**,与 `fail-on-drift` 无关——它表示门禁没能给出答案（`stale`/`failed`），
 这不是一条 finding，不能被静默降级成 finding。

@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -13,6 +14,16 @@ from drift_agent.model.contracts import ModelCallUsage
 from drift_agent.model.probe import ModelProbeReport
 
 runner = CliRunner()
+
+
+def _flattened(output: str) -> str:
+    """Rich wraps its error panel at the terminal width, which differs between a
+    developer's terminal and a CI runner. Strip the styling and the wrapping so
+    an assertion tests the message rather than the environment."""
+
+    plain = re.sub(r"\x1b\[[0-9;]*m", "", output)
+    plain = plain.replace("\u2502", " ")
+    return re.sub(r"\s+", " ", plain)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +201,9 @@ def test_bounding_options_require_json_v3(
     result = runner.invoke(app, [command, "--repo", str(drift_repo), *arguments])
 
     assert result.exit_code == 2
-    # The rich error panel wraps the message; assert fragments that stay intact.
-    assert "--max-findings/--summary require" in result.output
-    assert "--output-version 3" in result.output
+    flattened = _flattened(result.output)
+    assert "--max-findings/--summary require" in flattened
+    assert "--output-version 3" in flattened
 
 
 def test_explicit_v3_json_is_forwarded_without_enabling_semantic_analysis(
