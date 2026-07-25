@@ -9,4 +9,4 @@
 这些文件未按新版架构重写，其中的 Multi-Agent、RAG、多语言、旧路线图和“只检测不修复”等内容不再代表当前方案。
 
 当前架构、技术选型和算法总览见 [架构文档](../arch/)；规范性主设计仍是
-[Doc-Code Drift Maintenance Agent 设计](../superpowers/specs/2026-07-12-doc-code-drift-agent-design.md)。
+[Doc-Code Drift Maintenance Agent 设计](../design/2026-07-12-doc-code-drift-agent-design.md)。

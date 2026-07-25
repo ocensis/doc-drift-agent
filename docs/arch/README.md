@@ -14,7 +14,7 @@
 | `docs/arch/` | 面向维护者的当前架构说明 | 随实现变化同步更新 |
 | `docs/reference/` | 早期方案、调研和选型背景 | 不能作为当前架构依据 |
 
-当前主设计是 [Doc-Code Drift Maintenance Agent 设计](../superpowers/specs/2026-07-12-doc-code-drift-agent-design.md)。
+当前主设计是 [Doc-Code Drift Maintenance Agent 设计](../design/2026-07-12-doc-code-drift-agent-design.md)。
 Stage 2、3、4 的增量合同分别位于 [docs/spec](../spec/)；本目录不复制完整验收条款，而是解释这些合同如何落在代码里。
 
 ## 阅读顺序
@@ -31,7 +31,7 @@ Stage 2、3、4 的增量合同分别位于 [docs/spec](../spec/)；本目录不
 flowchart LR
     Caller["CLI / stdio MCP / CI"] --> Request["RunRequest + ScopeSpec"]
     Request --> App["application.run"]
-    App --> Graph["5-node LangGraph"]
+    App --> Pipeline["5-node bounded pipeline"]
     Graph --> Evidence["deterministic evidence tools"]
     Evidence -->|"check / no repairable finding"| Finalize["finalize"]
     Evidence -->|"repair"| Repair["bounded docs-only repair"]

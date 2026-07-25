@@ -27,7 +27,7 @@ flowchart TB
     App["application.run / AgentRuntime"]
 
     subgraph Core["单 Agent Core"]
-        Graph["LangGraph StateGraph"]
+        Pipeline["bounded five-node pipeline"]
         Scope["Git scope + snapshot"]
         Evidence["providers + exact alignment + detectors"]
         Policy["truth policy + memory suppression"]
@@ -45,8 +45,8 @@ flowchart TB
     MCP --> Contract
     CI --> Contract
     Contract --> App
-    App --> Graph
-    Graph --> Scope --> Evidence --> Policy
+    App --> Pipeline
+    Pipeline --> Scope --> Evidence --> Policy
     Policy -->|"check / no DETECTED"| Validation
     Policy -->|"repair + DETECTED"| Plan
     Plan --> Apply --> Validation
@@ -78,7 +78,7 @@ flowchart TB
 
 ## 4. 当前状态图
 
-当前 [agent/graph.py](../../src/drift_agent/agent/graph.py) 是五节点有界图：
+当前 [agent/pipeline.py](../../src/drift_agent/agent/pipeline.py) 是五节点有界流程（原为 LangGraph `StateGraph`；它没有环、checkpointer 或 interrupt，现为等价的普通 Python，保留了逐 key 合并节点返回值的语义）：
 
 ```mermaid
 stateDiagram-v2
@@ -91,7 +91,7 @@ stateDiagram-v2
     finalize --> [*]
 ```
 
-这与早期设计稿中的概念流程略有不同：最多两次 patch attempt、fast→strong 升级、group-local rollback 等细节封装在 `apply_validate` 节点和相关 service 内，而不是 LangGraph 上的开放回边。因此系统不会形成无限 ReAct 循环。
+这与早期设计稿中的概念流程略有不同：最多两次 patch attempt、fast→strong 升级、group-local rollback 等细节封装在 `apply_validate` 节点和相关 service 内，而不是流程上的开放回边。因此系统不会形成无限 ReAct 循环。
 
 节点职责如下：
 
@@ -103,9 +103,9 @@ stateDiagram-v2
 | `apply_validate` | 原子写入、重检、required validation、attempt/rollback receipt | 任一前置条件或 required validation 不满足就回滚/abstain |
 | `finalize` | 最终 closure、status、usage、memory event、public bundle | 发布前证据变化返回 stale；异常返回 failed |
 
-Graph 共享的 typed state 位于 [agent/state.py](../../src/drift_agent/agent/state.py)。领域对象和 bundle 位于 [domain/models.py](../../src/drift_agent/domain/models.py)，跨版本序列化集中在 [domain/serialization.py](../../src/drift_agent/domain/serialization.py)。
+流程共享的 typed state 位于 [agent/state.py](../../src/drift_agent/agent/state.py)。领域对象和 bundle 位于 [domain/models.py](../../src/drift_agent/domain/models.py)，跨版本序列化集中在 [domain/serialization.py](../../src/drift_agent/domain/serialization.py)。
 
-目前依赖组合根和五个 phase 的主要编排都集中在 [application.py](../../src/drift_agent/application.py) 的 `AgentRuntime` 中；`agent/graph.py` 只定义节点与边。这是当前真实代码形态，不应把设计图中的逻辑分层误读成已经拆分完成的独立 service。
+目前依赖组合根和五个 phase 的主要编排都集中在 [application.py](../../src/drift_agent/application.py) 的 `AgentRuntime` 中；`agent/pipeline.py` 只定义节点顺序与那一个条件分支。这是当前真实代码形态，不应把设计图中的逻辑分层误读成已经拆分完成的独立 service。
 
 ## 5. 证据平面
 

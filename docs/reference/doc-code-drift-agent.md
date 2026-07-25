@@ -1,6 +1,6 @@
 # Doc-Code Drift Agent — 第二个求职项目方案
 
-> **历史方案（已归档）**：本文保留早期 Multi-Agent/RAG 设计，只用于追溯决策，不代表当前架构。请以 [2026-07-12 主设计](../superpowers/specs/2026-07-12-doc-code-drift-agent-design.md) 为准。
+> **历史方案（已归档）**：本文保留早期 Multi-Agent/RAG 设计，只用于追溯决策，不代表当前架构。请以 [2026-07-12 主设计](../design/2026-07-12-doc-code-drift-agent-design.md) 为准。
 
 > 一个自动检测「文档与代码是否对得上」的 Agentic 系统。
 > 定位:求职作品(广投大厂 agent/应用岗),与 SCA 项目互补,补齐 RAG / Multi-Agent / Memory / 评测飞轮四项 JD 硬通货。

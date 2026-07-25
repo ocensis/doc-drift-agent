@@ -7,7 +7,7 @@
 ## 文档
 
 - [当前架构、技术选型与核心算法](docs/arch/)
-- [当前主设计](docs/superpowers/specs/2026-07-12-doc-code-drift-agent-design.md)
+- [初始设计方案（2026-07-12）](docs/design/2026-07-12-doc-code-drift-agent-design.md)——记录初始取舍；当前权威描述以 `docs/arch/` 为准
 - [Stage 2 技术 Spec](docs/spec/stage-2-structural-hardening-spec.md)
 - [Stage 2 测试 Spec](docs/spec/stage-2-structural-hardening-spec-test.md)
 - [Stage 3 技术 Spec](docs/spec/stage-3-executable-semantic-spec.md)
@@ -113,7 +113,7 @@ steps:
   - uses: actions/checkout@v6
     with:
       fetch-depth: 0        # 门禁作用于 committed range，需要 base commit 在历史里
-  - uses: yh/doc-drift-agent@v0        # 生产中固定到 tag 或 commit
+  - uses: ocensis/doc-drift-agent@v0        # 生产中固定到 tag 或 commit
 ```
 
 三个默认值是刻意选的：

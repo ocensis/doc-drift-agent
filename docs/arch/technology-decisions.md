@@ -20,7 +20,7 @@
 | 关注点 | 当前选择 | 选择原因 |
 | --- | --- | --- |
 | 语言/runtime | Python 3.11+ | 与目标仓库、AST、doctest/pytest 生态一致 |
-| Agent orchestration | LangGraph `StateGraph` | 明确表达五节点有界状态和条件路由，不需要开放式 ReAct runtime |
+| Agent orchestration | 普通 Python 有界流程（`agent/pipeline.py`） | 五节点、一个条件分支、无环无 checkpointer；曾用 LangGraph `StateGraph`，但它承担的正是这十行控制流，收益不抵一层依赖与间接性 |
 | 数据合同 | Pydantic v2 | strict typed domain、public wire、adapter input 和 model structured output 共用可验证合同 |
 | Python API 提取 | Griffe + Python AST | Griffe 提供 public symbol/signature 视图；AST 补 source span、docstring guard 和窄语义事实 |
 | Markdown 提取 | markdown-it-py + 自有 source mapping | 保留 heading/fence/inline literal 的精确 byte anchor |
@@ -44,7 +44,7 @@
 
 当前只有一个 Drift Maintenance Agent。Scope Analyzer、provider、detector、planner、validator、memory 和 adapter 都是工具或边界组件，不是拥有独立目标的 Agent。
 
-原因是问题域已经被 Git scope、Python/Markdown grammar 和 exact-FQN 对齐显著收窄。额外的 Planner/Analyzer/Verifier Agent 会增加消息协议、状态同步、成本和失败组合，却不会让 evidence 更确定。LangGraph 只负责有界状态流。
+原因是问题域已经被 Git scope、Python/Markdown grammar 和 exact-FQN 对齐显著收窄。额外的 Planner/Analyzer/Verifier Agent 会增加消息协议、状态同步、成本和失败组合，却不会让 evidence 更确定。编排本身只负责有界状态流。
 
 ### ADR-002：evidence-first，模型不参与搜索和对齐
 
@@ -125,7 +125,7 @@ Scorer 从原始 workspace/stream/public result 计算 neutral finding、changed
 | 早期方案/调研项 | 当前结论 | 去向 |
 | --- | --- | --- |
 | Planner / Code Analyzer / Doc Analyzer / Consistency Judge / Repair / Verifier Multi-Agent | 替换 | 单 Agent + 普通 typed tools；保留职责分层，不保留 Agent 身份 |
-| Supervisor/角色消息协议 | 替换 | LangGraph 五节点状态和 Pydantic domain state |
+| Supervisor/角色消息协议 | 替换 | 五节点有界流程和 Pydantic domain state |
 | RAG / GraphRAG / embedding / vector DB | 未采用 | exact FQN/hash/version + SQLite；通用语义检索延后 |
 | tree-sitter 多语言 parser | 延后 | Python 首版使用 Griffe + AST |
 | SQLite + FTS5 文本索引 | 部分沿用 | 沿用 SQLite；当前主要使用精确 identity/fingerprint，不依赖 FTS5 fuzzy retrieval |
@@ -169,7 +169,7 @@ Scorer 从原始 workspace/stream/public result 计算 neutral finding、changed
 
 ## 7. 主要决策来源
 
-- [当前主设计](../superpowers/specs/2026-07-12-doc-code-drift-agent-design.md)
+- [当前主设计](../design/2026-07-12-doc-code-drift-agent-design.md)
 - [Stage 2 结构加固 Spec](../spec/stage-2-structural-hardening-spec.md)
 - [Stage 3 executable/semantic Spec](../spec/stage-3-executable-semantic-spec.md)
 - [Stage 4 adapters/evaluation Spec](../spec/stage-4-adapters-evaluation-spec.md)

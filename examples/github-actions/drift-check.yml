@@ -25,7 +25,7 @@ jobs:
         shell: bash
         env:
           # Pin this to a reviewed release tag or full commit in production.
-          DRIFT_AGENT_SOURCE: git+https://github.com/ocensis/doc-code-drift-agent.git@main
+          DRIFT_AGENT_SOURCE: git+https://github.com/ocensis/doc-drift-agent.git@main
           DRIFT_BASE: ${{ github.event.pull_request.base.sha }}
           DRIFT_ARTIFACT_DIR: ${{ runner.temp }}/drift-agent
           DRIFT_STATE_DIR: ${{ runner.temp }}/drift-agent-state

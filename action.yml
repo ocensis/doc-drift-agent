@@ -43,7 +43,7 @@ inputs:
   version:
     description: Package spec installed with uvx; pin this to a tag or commit.
     required: false
-    default: git+https://github.com/yh/doc-drift-agent.git@main
+    default: git+https://github.com/ocensis/doc-drift-agent.git@main
 
 outputs:
   status:
