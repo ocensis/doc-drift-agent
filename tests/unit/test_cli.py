@@ -343,7 +343,7 @@ def test_semantic_json_requires_v3_before_application_run(
     )
 
     assert result.exit_code == 2
-    assert "--semantic JSON output requires --output-version 3" in result.output
+    assert "--semantic JSON output requires --output-version 3" in _flattened(result.output)
     assert calls == []
 
 
@@ -434,8 +434,8 @@ def test_model_probe_failure_is_sanitized(
     result = runner.invoke(app, ["model", "probe"])
 
     assert result.exit_code == 2
-    assert "model probe failed: authentication_failed" in result.output
-    assert "sensitive-provider-detail" not in result.output
+    assert "model probe failed: authentication_failed" in _flattened(result.output)
+    assert "sensitive-provider-detail" not in _flattened(result.output)
 
 
 @pytest.mark.parametrize("command", ["check", "repair"])
@@ -479,7 +479,7 @@ def test_init_scaffolds_starter_config_once(tmp_path: Path) -> None:
     again = runner.invoke(app, ["init", "--repo", str(tmp_path)])
 
     assert again.exit_code == 2
-    assert "already exists" in again.output
+    assert "already exists" in _flattened(again.output)
 
 
 def test_init_fails_closed_for_unsupported_layout(tmp_path: Path) -> None:
@@ -488,5 +488,5 @@ def test_init_fails_closed_for_unsupported_layout(tmp_path: Path) -> None:
     result = runner.invoke(app, ["init", "--repo", str(tmp_path)])
 
     assert result.exit_code == 2
-    assert "could not infer a supported source layout" in result.output
+    assert "could not infer a supported source layout" in _flattened(result.output)
     assert not (tmp_path / "drift-agent.toml").exists()
