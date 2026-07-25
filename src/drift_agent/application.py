@@ -2248,6 +2248,7 @@ class AgentRuntime:
                 repository_id=state.get("repository_id", ""),
             )
         )
+        section_unavailable: list[ValidationResult] = []
         if request.semantic_analysis:
             section_doc_paths = [
                 *doc_paths,
@@ -2271,8 +2272,25 @@ class AgentRuntime:
             if resolved_sections:
                 try:
                     section_client = self._semantic_model_client()
-                except ModelConfigurationError:
+                except ModelConfigurationError as error:
+                    # `--semantic` also switches on the deterministic
+                    # constant-return detector, which is designed to run without
+                    # a model, so an unusable credential must not fail the run.
+                    # It must not be invisible either: without a receipt the
+                    # bundle reports `clean` and zero model calls, and nothing
+                    # says whether the section pass was skipped or simply found
+                    # nothing.
                     section_client = None
+                    section_unavailable.append(
+                        ValidationResult(
+                            finding_ids=[],
+                            attempt_id="section_semantic",
+                            check="section_semantic",
+                            required=False,
+                            status=ValidationStatus.UNAVAILABLE,
+                            summary=f"{error.reason_code}: model-backed section review did not run",
+                        )
+                    )
                 if section_client is not None:
                     section_findings, _section_calls = self.section_detector.detect(
                         resolved_sections,
@@ -2541,7 +2559,11 @@ class AgentRuntime:
             **state,
             "snapshot": snapshot,
             "findings": findings,
-            "validation": [*state.get("validation", []), *semantic_validation],
+            "validation": [
+                *state.get("validation", []),
+                *semantic_validation,
+                *section_unavailable,
+            ],
             "validation_incomplete": (
                 state.get("validation_incomplete", False) or bool(semantic_validation)
             ),

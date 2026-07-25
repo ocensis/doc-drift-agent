@@ -168,7 +168,9 @@ def test_opt_in_code_change_reports_direct_mismatch_in_v3_only(tmp_path: Path) -
 
     assert bundle.status is RunStatus.DRIFT_FOUND
     assert bundle.scope == ["src/demo/api.py"]
-    assert bundle.validation == []
+    # Only the section-semantic receipt, which records that the
+    # model-backed pass did not run in this key-free environment.
+    assert [item.check for item in bundle.validation] == ["section_semantic"]
     assert len(bundle.findings) == 1
     finding = bundle.findings[0]
     assert finding.type == "semantic_drift"
@@ -238,7 +240,9 @@ def test_equal_semantic_assertion_is_clean(tmp_path: Path) -> None:
     assert bundle.status is RunStatus.CLEAN
     assert bundle.scope == ["docs/api.md"]
     assert bundle.findings == []
-    assert bundle.validation == []
+    # Only the section-semantic receipt, which records that the
+    # model-backed pass did not run in this key-free environment.
+    assert [item.check for item in bundle.validation] == ["section_semantic"]
     assert bundle_to_wire(bundle, 3)["schema_version"] == 3
     with pytest.raises(UnsupportedWireVersionError, match="cannot represent semantic analysis"):
         bundle_to_wire(bundle, 1)
@@ -602,3 +606,32 @@ def test_semantic_decision_is_invalidated_when_doc_evidence_changes(
         for event in current.memory_events
     )
     _assert_zero_model_read_only(repo, before, current)
+
+
+def test_missing_model_configuration_is_recorded_rather_than_silently_skipped(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """`--semantic` without a usable credential must not look like a clean pass.
+
+    The deterministic constant-return detector is designed to run without a
+    model, so an unusable credential cannot fail the run. But the model-backed
+    section pass then does not run at all, and `model_calls == 0` alone cannot
+    distinguish "skipped" from "ran and found nothing".
+    """
+
+    monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
+    repo, state_dir = _semantic_repo(
+        tmp_path,
+        current_source=_constant_source(2),
+    )
+
+    bundle = _semantic_check(repo, state_dir)
+
+    receipts = [item for item in bundle.validation if item.check == "section_semantic"]
+    assert len(receipts) == 1
+    assert receipts[0].status is ValidationStatus.UNAVAILABLE
+    assert receipts[0].summary.startswith("openrouter_api_key_missing:")
+    # The deterministic half still ran, so the run itself is not a failure.
+    assert bundle.status is not RunStatus.FAILED
+    assert bundle.usage.model_calls == 0
