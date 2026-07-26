@@ -237,6 +237,37 @@ uv run --env-file .env drift-agent model probe --profile fast --format json
 
 语义边界是**刻意窄**的:Markdown 必须是 exact-FQN 标题 + 完整 Python signature fence + 紧随其后的一行 ``Returns `<literal>`.``;代码必须是同步函数且只有一条常量 `return`。散文不作推断。模型只被允许回一个 literal 替换值——path、span、diff 和实际写入都不由模型决定。
 
+### tracing
+
+Langfuse 是 optional extra(`pip install 'doc-drift-agent[observability]'`),靠 `LANGFUSE_PUBLIC_KEY` + `LANGFUSE_SECRET_KEY` 两个环境变量启用,两个都没有就完全不初始化 client。
+
+**CI 里刻意不装、不传这两个变量。** 逐 PR 的门禁不需要 trace——需要 trace 的是迭代检测策略的时候,那属于评测和本地开发。传了变量却不装 extra,等于宣传一个不会发生的能力。
+
+## 评测
+
+两套**冻结的离线评测**,靶子全是公开库,零模型调用、零网络:
+
+```bash
+uv run pytest tests/e2e/test_structural_evaluation.py tests/e2e/test_stage3_evaluation.py
+```
+
+| 套件 | 案例 | 内容 |
+|---|---|---|
+| `structural-v1` | 8 | Click、HTTPX、Pydantic、Rich 的真实签名/docstring 漂移 |
+| `stage3-v1` | 10 | 可执行 oracle(doctest/pytest)与确定性语义 |
+
+断言的不只是"过了几个",还有**零模型调用、零网络调用、以及重放两次的投影逐字节相等**——一个会偷偷联网或结果不稳的检测器,分数再高也没有意义。
+
+门禁最要紧的那条行为单独有 e2e:
+
+```bash
+uv run pytest tests/e2e/test_blocking_gate.py
+```
+
+它成对地验证:一条真 contradiction 产生 `blocking: 1` 且 SARIF 不是 `note`;一条无法验证的声明产生 `blocking: 0` 且全是 `note`,但**照样被报告出来**。两个方向都测,是因为"全部阻断"和"全部不阻断"各自只会漏掉其中一个。
+
+> **语义 section 漂移(FR-009)的基准不在这个仓库里。** 它建立在非公开仓库上,冻结数据集、逐次迭代台账和相关 spec 都不随本项目发布。`evals/field/` 下的 harness 保留且与基准无关,靶子需要自备——见该目录的 README。
+
 ## License
 
 [Apache-2.0](LICENSE)。选它而不是 MIT 是因为多一条显式专利授权——这个仓库同时是一个会在别人 runner 里执行的 GitHub Action,接入方需要的授权范围比"读代码"更宽。
