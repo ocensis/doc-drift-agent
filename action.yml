@@ -29,8 +29,13 @@ inputs:
     default: "false"
   fail-on-drift:
     description: >-
-      Fail the job when drift is found. Off by default so a new adopter gets
-      annotations before a blocked merge. A tool malfunction (exit code 2)
+      Fail the job when a *blocking* finding is found -- one whose reason code
+      asserts the documentation contradicts the code. Findings that only record
+      that the detector could not verify a claim (`unsupported.*`,
+      `ambiguity.*`) are advisory: they are annotated and counted, never
+      blocking, because they fire on constructs the detector does not support
+      and no documentation change removes them. Off by default so a new adopter
+      gets annotations before a blocked merge. A tool malfunction (exit code 2)
       always fails regardless of this input.
     required: false
     default: "false"
@@ -41,9 +46,13 @@ inputs:
     required: false
     default: "true"
   version:
-    description: Package spec installed with uvx; pin this to a tag or commit.
+    description: >-
+      Package spec installed with uvx. Pinning the action with `uses: ...@ref`
+      does not pin this -- it is a second, independent pointer at the Python
+      package -- so the default tracks the same tag the action is released
+      under rather than a moving branch.
     required: false
-    default: git+https://github.com/ocensis/doc-drift-agent.git@main
+    default: git+https://github.com/ocensis/doc-drift-agent.git@v0
 
 outputs:
   status:
@@ -52,6 +61,11 @@ outputs:
   exit-code:
     description: "Adapter exit code: 0 clean/fixed, 1 findings, 2 malfunction."
     value: ${{ steps.gate.outputs.exit-code }}
+  blocking-count:
+    description: >-
+      Findings that assert a documentation defect, excluding the ones that only
+      record an unverifiable claim. This is what `fail-on-drift` acts on.
+    value: ${{ steps.gate.outputs.blocking-count }}
   artifacts-dir:
     description: Directory holding bundle.json, results.sarif, summary.md, pr-comment.md.
     value: ${{ steps.gate.outputs.artifacts-dir }}
@@ -83,6 +97,7 @@ runs:
           {
             echo "exit-code=$1"
             echo "status=$2"
+            echo "blocking-count=$3"
             echo "artifacts-dir=$DRIFT_ARTIFACTS"
           } >> "$GITHUB_OUTPUT"
         }
@@ -92,7 +107,7 @@ runs:
         # which is not a finding and not a malfunction.
         if test -z "$DRIFT_BASE" || test "$DRIFT_BASE" = "0000000000000000000000000000000000000000"; then
           echo "::notice::no base revision for this event; nothing to compare against"
-          emit 0 skipped
+          emit 0 skipped 0
           exit 0
         fi
 
@@ -116,8 +131,16 @@ runs:
         code=${PIPESTATUS[0]}
         set -e
 
-        status=$(sed -n 's/^status: //p' "$RUNNER_TEMP/drift-stdout.txt" | head -1)
-        emit "$code" "${status:-unknown}"
+        # `q` rather than `| head -1`: `-e` is back on and `pipefail` is set, so a
+        # reader that closes the pipe early would SIGPIPE sed and kill the step
+        # before it records anything.
+        first() { sed -n "/^$1: /{s///p;q;}" "$RUNNER_TEMP/drift-stdout.txt"; }
+        status=$(first status)
+        # Deliberately not defaulted: a run that could not report its blocking
+        # count must not look like a run that reported zero. The policy step
+        # below refuses the empty value rather than guessing.
+        blocking=$(first blocking)
+        emit "$code" "${status:-unknown}" "$blocking"
         exit 0
 
     - name: Publish the job summary
@@ -169,6 +192,7 @@ runs:
       env:
         DRIFT_EXIT: ${{ steps.gate.outputs.exit-code }}
         DRIFT_STATUS: ${{ steps.gate.outputs.status }}
+        DRIFT_BLOCKING: ${{ steps.gate.outputs.blocking-count }}
         DRIFT_BLOCK: ${{ inputs.fail-on-drift }}
       run: |
         set -euo pipefail
@@ -182,8 +206,19 @@ runs:
             # A finding is a review signal. Blocking on it is the adopter's call,
             # so it stays opt-in; the SARIF annotations land either way.
             if test "$DRIFT_BLOCK" = "true"; then
-              echo "::error::documentation drift found ($DRIFT_STATUS)" >&2
-              exit 1
+              # Only a finding that asserts a defect may block. An unverifiable
+              # claim is the detector's limit, not the repository's, and gating
+              # merges on it would make the action unadoptable.
+              if ! printf '%s' "$DRIFT_BLOCKING" | grep -Eq '^[0-9]+$'; then
+                echo "::error::gate reported no blocking-finding count; refusing to guess" >&2
+                exit 1
+              fi
+              if test "$DRIFT_BLOCKING" -gt 0; then
+                echo "::error::documentation drift found ($DRIFT_STATUS, $DRIFT_BLOCKING blocking)" >&2
+                exit 1
+              fi
+              echo "::warning::only advisory findings ($DRIFT_STATUS); not blocking"
+              exit 0
             fi
             echo "::warning::documentation drift found ($DRIFT_STATUS); not blocking"
             ;;

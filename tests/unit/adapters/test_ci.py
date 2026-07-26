@@ -13,7 +13,11 @@ from drift_agent.adapters.ci import (
     prepare_artifact_directory,
     write_ci_artifacts,
 )
-from drift_agent.adapters.contracts import PublicBundleV3
+from drift_agent.adapters.contracts import (
+    PublicBundleV3,
+    blocking_finding_count,
+    bounded_bundle,
+)
 from drift_agent.adapters.rendering import bundle_to_sarif, render_markdown_summary
 from drift_agent.cli import app
 from drift_agent.domain.enums import (
@@ -39,6 +43,8 @@ def _bundle(
     status: RunStatus = RunStatus.DRIFT_FOUND,
     include_finding: bool = True,
     include_failed_validation: bool = False,
+    disposition: FindingDisposition = FindingDisposition.DETECTED,
+    reason_code: str = "parameter.added",
 ) -> VerifiedRepairBundle:
     findings = []
     if include_finding:
@@ -47,7 +53,7 @@ def _bundle(
                 id="finding-v3",
                 symbol_id="demo.@unsafe|name\nnext",
                 type="signature_drift",
-                disposition=FindingDisposition.DETECTED,
+                disposition=disposition,
                 truth_source="code",
                 code_evidence=EvidenceAnchor(
                     path="src/demo/<api>.py",
@@ -71,7 +77,7 @@ def _bundle(
                 detector_id="structural.signature",
                 detector_version="2",
                 fingerprint="stable-fingerprint",
-                reason_code="parameter.added",
+                reason_code=reason_code,
             )
         )
     validation = []
@@ -389,6 +395,88 @@ def test_ci_check_maps_one_check_since_request_with_explicit_external_state(
         "summary.md",
         "pr-comment.md",
     }
+
+
+def test_unverifiable_finding_annotates_as_a_note_rather_than_an_error() -> None:
+    unresolved = {"disposition": FindingDisposition.UNRESOLVED, "status": RunStatus.UNRESOLVED}
+    advisory = PublicBundleV3.from_bundle(
+        _bundle(reason_code="unsupported.symbol_kind", **unresolved)
+    )
+    contradiction = PublicBundleV3.from_bundle(
+        _bundle(reason_code="precondition_changed", **unresolved)
+    )
+
+    assert bundle_to_sarif(advisory)["runs"][0]["results"][0]["level"] == "note"
+    assert bundle_to_sarif(contradiction)["runs"][0]["results"][0]["level"] == "error"
+    # Both are still reported: advisory means "do not block", never "do not tell".
+    assert len(advisory.findings) == 1
+    assert blocking_finding_count(advisory) == 0
+    assert blocking_finding_count(contradiction) == 1
+
+
+def test_markdown_summary_separates_blocking_findings_from_advisory_ones() -> None:
+    advisory = PublicBundleV3.from_bundle(
+        _bundle(
+            reason_code="unsupported.literal",
+            disposition=FindingDisposition.UNRESOLVED,
+            status=RunStatus.UNRESOLVED,
+        )
+    )
+
+    summary = render_markdown_summary(advisory, revision="head")
+
+    assert "Findings: 1" in summary
+    assert "Blocking findings: 0 (1 advisory)" in summary
+    assert "| advisory | unresolved |" in summary
+
+
+def test_blocking_count_reads_complete_counts_when_findings_were_dropped() -> None:
+    public = PublicBundleV3.from_bundle(_bundle(reason_code="precondition_changed"))
+
+    bounded = bounded_bundle(public, summary_only=True)
+
+    # The blocking finding is no longer inlined, so counting the visible list
+    # would report zero and quietly turn a blocked merge into a passing one.
+    assert bounded.findings == []
+    assert bounded.omitted_findings == 1
+    assert blocking_finding_count(bounded) == 1
+
+
+def test_ci_check_reports_the_blocking_count_alongside_the_status(
+    drift_repo: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        application,
+        "run",
+        lambda request: _bundle(
+            status=RunStatus.DRIFT_FOUND,
+            reason_code="unsupported.markdown_claim",
+            disposition=FindingDisposition.UNRESOLVED,
+        ),
+    )
+
+    result = CliRunner().invoke(
+        app,
+        [
+            "ci",
+            "check",
+            "--repo",
+            str(drift_repo),
+            "--since",
+            "HEAD~1",
+            "--state-dir",
+            str(drift_repo.parent / f"{drift_repo.name}-blocking-state"),
+            "--artifacts-dir",
+            str(drift_repo.parent / f"{drift_repo.name}-blocking-artifacts"),
+        ],
+    )
+
+    # The exit code still answers "were there findings"; the action reads the
+    # count to decide whether any of them may block a merge.
+    assert result.exit_code == 1
+    assert "status: drift_found" in result.output
+    assert "blocking: 0" in result.output
 
 
 def test_ci_writer_emits_exact_v3_and_four_deterministic_files(

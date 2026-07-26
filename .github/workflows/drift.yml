@@ -36,11 +36,11 @@ jobs:
         with:
           base: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           semantic: "false"
-          # Not blocking yet: the first dogfood run surfaced 23 pre-existing
-          # docstring findings in evaluation/benchmark_harness.py. Flip this to
-          # "true" once they are repaired, so the repository is held to the
-          # standard its own gate enforces.
-          fail-on-drift: "false"
+          # Blocking, so this repository is held to the standard its own gate
+          # enforces. Only findings that assert a contradiction can fail the job;
+          # the advisory ones -- `unsupported.symbol_kind` fires on all 15 Typer
+          # commands in cli.py -- are annotated and counted instead.
+          fail-on-drift: "true"
           version: .
 
   # Pull requests only. Semantic findings are review commentary, and there is

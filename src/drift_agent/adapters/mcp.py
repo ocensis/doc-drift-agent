@@ -39,11 +39,13 @@ SERVER_INSTRUCTIONS = (
     "and disposition; findings referenced by approval_required are always retained "
     "so approval evidence stays in-band. For large scopes prefer summary_only=true "
     "first, then re-query with a narrower scope or a higher cap if detail is "
-    "needed. Interpretation note: on "
-    'docstring findings, reason_code "unsupported.literal" means the docstring '
-    "literal cannot serve as a deterministic anchor — including Args/Returns "
-    "entries that are absent entirely — and does not by itself indicate a "
-    "doc-code contradiction."
+    "needed. Interpretation note: a reason_code containing unsupported, "
+    "ambiguity, or ambiguous reports that the detector could not establish a "
+    "deterministic anchor, not that the documentation contradicts the code — "
+    'on docstring findings "unsupported.literal" covers Args/Returns entries '
+    "that are absent entirely, and \"unsupported.symbol_kind\" fires on every "
+    "decorated function regardless of what its documentation says. Report those "
+    "as advisory; only the remaining reason codes assert a defect."
 )
 _MCP_SCOPE_SCHEMA = scope_spec_json_schema()
 # MCP requires an explicit scope even though the library-level ScopeSpec keeps

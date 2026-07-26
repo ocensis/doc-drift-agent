@@ -18,6 +18,7 @@ from drift_agent.domain.models import (
     VerifiedRepairBundle,
 )
 from drift_agent.domain.serialization import bundle_to_wire
+from drift_agent.domain.status import is_advisory_reason
 
 
 class PublicContractModel(BaseModel):
@@ -94,6 +95,32 @@ class PublicBundleV3(PublicContractModel):
         return cls.model_validate(bundle_to_wire(bundle, 3))
 
 
+def blocking_finding_count(bundle: PublicBundleV3) -> int:
+    """Count the findings that assert the documentation is wrong.
+
+    Findings whose reason code only records that the detector could not decide are
+    excluded; see `is_advisory_reason`. A bounded bundle drops findings from the
+    inlined list, so the complete `findings_summary` counts are preferred whenever
+    they are present -- counting the visible list there would silently under-report
+    and could turn a blocked merge into a passing one.
+
+    Args:
+        bundle (PublicBundleV3): A complete or bounded public bundle.
+
+    Returns:
+        int: The number of blocking findings in the run, not merely in the list.
+    """
+
+    summary = bundle.findings_summary
+    if summary is not None:
+        return sum(
+            count
+            for reason_code, count in summary.by_reason_code.items()
+            if not is_advisory_reason(reason_code)
+        )
+    return sum(1 for finding in bundle.findings if not is_advisory_reason(finding.reason_code))
+
+
 def _sorted_counts(values: list[str]) -> dict[str, int]:
     counts = Counter(values)
     return dict(sorted(counts.items(), key=lambda item: (-item[1], item[0])))
@@ -123,6 +150,17 @@ def bounded_bundle(
     always retained — approval decisions need their evidence in-band — so the
     result can exceed `max_findings` (and `summary_only` can inline findings)
     by up to the number of pending approvals.
+
+    Args:
+        bundle (PublicBundleV3): The complete bundle to bound; it is never mutated.
+        max_findings (int | None): Largest number of findings to inline before dropping the
+            remainder. None leaves the list untouched unless `summary_only` is set.
+        summary_only (bool): Drop every finding that no pending approval references, whatever
+            `max_findings` says, leaving the counts as the only record.
+
+    Returns:
+        PublicBundleV3: The original bundle when nothing was dropped, otherwise a copy carrying
+            the retained findings, the omitted count, and complete counts over the full set.
     """
 
     if summary_only:
@@ -154,5 +192,6 @@ __all__ = [
     "PublicEvidenceAnchor",
     "PublicFindingsSummary",
     "PublicWorkspaceSnapshot",
+    "blocking_finding_count",
     "bounded_bundle",
 ]

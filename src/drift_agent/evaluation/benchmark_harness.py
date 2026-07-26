@@ -588,7 +588,31 @@ def create_benchmark_plan(
     shuffle_seed: int = _DEFAULT_SHUFFLE_SEED,
     timeout_seconds: int = 120,
 ) -> BenchmarkPlanV1:
-    """Audit the frozen suite and write a deterministic, non-live benchmark plan."""
+    """Audit the frozen suite and write a deterministic, non-live benchmark plan.
+
+    Args:
+        output_path (Path): Destination for the canonical plan JSON; the parent must be a private
+            0700 directory and also receives the matching .sha256 digest sidecar.
+        codex_model (str): Model identifier recorded in the Codex runtime contract and used for
+            every live Codex invocation during replay.
+        reasoning_effort (Literal["low", "medium", "high", "xhigh"]): Effort level rendered into
+            the sealed Codex CLI model_reasoning_effort setting; defaults to the lowest tier.
+        trials (Literal[1, 3]): Picks the frozen trial-ID sequence, 1 for the smoke batch and 3 for
+            the full batch, and multiplies the 12 portable cases into the live-invocation ceiling.
+        codex_binary (Path | None): Explicit Codex CLI executable to version-probe and fingerprint;
+            defaults to the first codex found on PATH.
+        source_root (Path | None): Worktree audited for uv.lock, built into the slim Drift wheel,
+            and digested for the scorer and namespace contracts; defaults to this file's repo root.
+        runtime_root (Path | None): Private directory holding the neutral toolchain, slim runtime,
+            and public contracts; defaults to benchmark-runtime beside the plan, as replay expects.
+        shuffle_seed (int): Seeds the digest-derived slot ordering and per-pair subject order, and
+            is recorded so replay rebuilds the identical schedule.
+        timeout_seconds (int): Hard wall-clock ceiling recorded for every subject process; defaults
+            to 120 seconds.
+
+    Returns:
+        BenchmarkPlanV1: The sealed plan written to disk, whose plan_digest identifies the run.
+    """
 
     root = (source_root or _source_root()).resolve()
     output = output_path.expanduser().absolute()
@@ -1469,7 +1493,32 @@ def run_benchmark(
     authorized_by: str = "local-user",
     progress: Any | None = None,
 ) -> BenchmarkRunArtifacts:
-    """Run one no-retry smoke or full batch and immediately score sealed evidence."""
+    """Run one no-retry smoke or full batch and immediately score sealed evidence.
+
+    Args:
+        plan_path (Path): Sealed plan to execute; its digest sidecar is checked and its parent
+            directory locates the prepared benchmark-runtime tree.
+        artifacts_dir (Path): Absolute, symlink-free destination for sealed evidence; must be new
+            or empty and outside the worktree, home, and system temp.
+        authorize_live_codex (bool): Must be true, otherwise the batch aborts before any live
+            Codex invocation is spent.
+        codex_binary (Path | None): Codex CLI whose version and hash must still match the plan;
+            defaults to the first codex executable on PATH.
+        source_root (Path | None): Worktree re-audited for unchanged toolchain, lock, and contract
+            digests, and forbidden as an artifacts location; defaults to the repository root above
+            this module.
+        codex_auth_home (Path | None): Directory whose auth.json alone is copied into a throwaway
+            CODEX_HOME that is destroyed after the sentinel and after each Codex slot; defaults to
+            ~/.codex.
+        authorized_by (str): Accountable identity recorded in authorization.json beside the plan
+            digest and live-invocation ceiling; defaults to "local-user".
+        progress (Any | None): Invoked with a one-line status string after each scheduled slot;
+            ignored unless callable.
+
+    Returns:
+        BenchmarkRunArtifacts: The resolved artifacts directory, plan digest, coverage report,
+            paired comparison, control report, and headline benchmark report.
+    """
 
     if not authorize_live_codex:
         raise BenchmarkHarnessError("live benchmark requires explicit --authorize-live-codex")
@@ -1890,7 +1939,18 @@ def rebuild_benchmark_reports(
     plan_path: Path,
     artifacts_dir: Path,
 ) -> BenchmarkRunArtifacts:
-    """Offline digest validation and deterministic report regeneration."""
+    """Offline digest validation and deterministic report regeneration.
+
+    Args:
+        plan_path (Path): Frozen plan JSON whose schedule enumerates the slots to revalidate and
+            whose digest and live-invocation ceiling must match the stored authorization ledger.
+        artifacts_dir (Path): Existing evidence tree holding the authorization ledger and the
+            sealed per-slot runs, rewritten in place with the regenerated report files.
+
+    Returns:
+        BenchmarkRunArtifacts: Resolved artifacts root and plan digest alongside the rebuilt
+            coverage, comparison, control, and headline reports.
+    """
 
     plan = load_benchmark_plan(plan_path)
     artifacts = artifacts_dir.expanduser().absolute().resolve()

@@ -135,6 +135,27 @@ steps:
 **退出码 2 永远失败**,与 `fail-on-drift` 无关——它表示门禁没能给出答案（`stale`/`failed`），
 这不是一条 finding，不能被静默降级成 finding。
 
+#### blocking 与 advisory
+
+一条 finding 的 `reason_code` 说的是两件不同的事之一:
+
+- **文档错了** —— `precondition_changed`、`omission.config_key`、`semantic.alignment_missing`……
+- **检测器没法判断** —— `unsupported.*`、`ambiguity.*`、`semantic.*_unsupported`
+
+只有前者算 **blocking**。后者是本工具覆盖面的边界,不是被检仓库的缺陷:
+`unsupported.symbol_kind` 会对**每一个**带装饰器的公开函数报一条,而
+[`drift_agent.cli`](src/drift_agent/cli.py) 的 15 个 Typer 命令全都带 `@app.command()`——
+写多少文档都消不掉。拿它挡合并,这个 action 就没法被任何人接入。
+
+于是:
+
+- SARIF 里 advisory 是 `note`,不是 `error`——不在没有已知问题的行上刷红;
+- `ci check` 在 `status:` 之外多打一行 `blocking: N`;
+- `fail-on-drift: "true"` 只在 `N > 0` 时阻断。
+
+**advisory 的意思是"不阻断",不是"不报告"**——它照样进 SARIF、进 job summary、进 `bundle.json`。
+门禁负责报告,workflow 负责决策;门禁没报出这个计数时,policy 步骤宁可失败也不猜 0。
+
 本仓库自己吃自己的狗粮:[`.github/workflows/drift.yml`](.github/workflows/drift.yml) 对
 自己的文档跑同一个门禁,拆成两个 job:
 

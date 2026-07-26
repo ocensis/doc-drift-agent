@@ -7,9 +7,13 @@ from collections.abc import Mapping
 from typing import Any
 from urllib.parse import quote
 
-from drift_agent.adapters.contracts import PublicBundleV3, PublicDriftFinding
+from drift_agent.adapters.contracts import (
+    PublicBundleV3,
+    PublicDriftFinding,
+    blocking_finding_count,
+)
 from drift_agent.domain.enums import FindingDisposition, RunStatus, ValidationStatus
-from drift_agent.domain.status import exit_code_for_status
+from drift_agent.domain.status import exit_code_for_status, is_advisory_reason
 
 _MAX_SUMMARY_FINDINGS = 50
 _MAX_CELL_CHARACTERS = 320
@@ -44,6 +48,13 @@ def render_markdown_summary(
         )
         or "none"
     )
+    blocking = blocking_finding_count(bundle)
+    total = (
+        bundle.findings_summary.total_findings
+        if bundle.findings_summary is not None
+        else len(bundle.findings)
+    )
+    advisory = total - blocking
     validation_counts = Counter(result.status.value for result in bundle.validation)
     validation_summary = (
         ", ".join(
@@ -62,6 +73,7 @@ def render_markdown_summary(
         f"Baseline revision: `{_markdown_cell(revision or 'not recorded')}`  ",
         f"Changed scope: {len(bundle.scope)} file(s)  ",
         f"Findings: {len(bundle.findings)}  ",
+        f"Blocking findings: {blocking} ({advisory} advisory)  ",
         f"Disposition counts: {_markdown_cell(disposition_summary)}  ",
         f"Validation results: {_markdown_cell(validation_summary)}",
         "",
@@ -69,14 +81,15 @@ def render_markdown_summary(
     if findings:
         lines.extend(
             [
-                "| Disposition | Kind | Symbol | Documentation evidence | Reason |",
-                "|---|---|---|---|---|",
+                "| Severity | Disposition | Kind | Symbol | Documentation evidence | Reason |",
+                "|---|---|---|---|---|---|",
             ]
         )
         lines.extend(
             "| "
             + " | ".join(
                 (
+                    "advisory" if is_advisory_reason(finding.reason_code) else "blocking",
                     _markdown_cell(finding.disposition.value),
                     _markdown_cell(finding.kind),
                     _markdown_cell(finding.symbol_id),
@@ -137,6 +150,11 @@ def _sarif_uri(path: str) -> str:
 
 def _level(finding: PublicDriftFinding) -> str:
     if finding.disposition is FindingDisposition.FIXED:
+        return "note"
+    if is_advisory_reason(finding.reason_code):
+        # The detector could not verify the claim. Rendering that as `error` puts a
+        # red annotation on a line where nothing is known to be wrong, which is how
+        # a code-scanning integration teaches its readers to ignore it.
         return "note"
     if finding.disposition is FindingDisposition.DETECTED:
         return "warning"

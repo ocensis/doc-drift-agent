@@ -14,7 +14,11 @@ from drift_agent.adapters.ci import (
     prepare_artifact_directory,
     write_ci_artifacts,
 )
-from drift_agent.adapters.contracts import PublicBundleV3, bounded_bundle
+from drift_agent.adapters.contracts import (
+    PublicBundleV3,
+    blocking_finding_count,
+    bounded_bundle,
+)
 from drift_agent.agent.budget import BudgetExhausted
 from drift_agent.config import ScaffoldError, scaffold_config
 from drift_agent.domain.enums import RunMode, RunStatus, ValidationStatus
@@ -354,11 +358,14 @@ def ci_check(
         )
     )
     try:
-        write_ci_artifacts(bundle, paths, revision=since)
+        public = write_ci_artifacts(bundle, paths, revision=since)
     except (OSError, ValidationError) as error:
         typer.echo(f"CI artifact publication failed: {type(error).__name__}", err=True)
         raise typer.Exit(2) from None
     typer.echo(f"status: {bundle.status.value}")
+    # The exit code still answers "were there findings"; it is this line that says
+    # how many of them assert a defect. The gate reports, the workflow decides.
+    typer.echo(f"blocking: {blocking_finding_count(public)}")
     typer.echo(f"bundle: {paths.bundle}")
     typer.echo(f"summary: {paths.summary}")
     typer.echo(f"sarif: {paths.sarif}")
