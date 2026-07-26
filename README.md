@@ -245,18 +245,20 @@ Langfuse 是 optional extra(`pip install 'doc-drift-agent[observability]'`),靠 
 
 ## 评测
 
-两套**冻结的离线评测**,靶子全是公开库,零模型调用、零网络:
+两套**冻结的离线评测**,共 18 个案例:
 
 ```bash
 uv run pytest tests/e2e/test_structural_evaluation.py tests/e2e/test_stage3_evaluation.py
 ```
 
-| 套件 | 案例 | 内容 |
-|---|---|---|
-| `structural-v1` | 8 | Click、HTTPX、Pydantic、Rich 的真实签名/docstring 漂移 |
-| `stage3-v1` | 10 | 可执行 oracle(doctest/pytest)与确定性语义 |
+| 套件 | 案例 | 内容 | 模型调用 |
+|---|---|---|---|
+| `structural-v1` | 8 | 签名与 docstring 漂移 | 0 |
+| `stage3-v1` | 10 | 可执行 oracle(doctest/pytest)与确定性语义 | 5(3 个语义修复案例走脚本化响应) |
 
-断言的不只是"过了几个",还有**零模型调用、零网络调用、以及重放两次的投影逐字节相等**——一个会偷偷联网或结果不稳的检测器,分数再高也没有意义。
+**关于来源,说清楚一点**:18 个案例里只有 **3 个**来自真实上游 commit——[encode/httpx](https://github.com/encode/httpx)、[pydantic/pydantic](https://github.com/pydantic/pydantic)、[Textualize/rich](https://github.com/Textualize/rich);其余 15 个是本项目自撰的合成 fixture(`provenance.kind = project_authored`)。**case id 里的库名不代表 provenance**——比如三个 `click.*` 案例全是自撰的,语料里没有任何真实 Click 来源。要判断某个案例的来源,读它的 `manifest.json`,别读 id。
+
+断言的不只是"过了几个":`structural-v1` 断言模型调用与网络调用都是 0;`stage3-v1` 断言模型调用**恰好**是 5(多一次少一次都失败)、executable 类零模型调用、网络调用为 0;两者都断言同一案例重放两次投影逐字节相等。一个会偷偷联网、或结果不稳、或模型用量对不上账的检测器,分数再高也不构成证据。
 
 门禁最要紧的那条行为单独有 e2e:
 

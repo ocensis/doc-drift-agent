@@ -220,6 +220,10 @@ Decision/alias 必须同时匹配 repository、finding fingerprint、evidence ha
 
 `failed` 优先于 `stale`；repair 中全部 `fixed` 才是 `fixed`，fixed 与其他 disposition 混合为 `partial`。
 
+状态回答的是"这次运行有没有结果"，**不回答"这些结果该不该挡住合并"**。后者由 finding 的 severity 决定，与 status 正交：`is_advisory_reason` 把 reason_code 分成"文档与代码矛盾"和"检测器无法判断"两类，只有前者计入 `blocking_finding_count`。`ci check` 在 `status:` 之外单独打印 `blocking: N`，composite action 的 policy 步骤据此决定是否失败——退出码 `1` 始终只表示"有 finding"。详见 [ADR-011](technology-decisions.md#adr-011只有-contradiction-能阻断合并)。
+
+bundle 被 `bounded_bundle` 截断时，计数取自 `findings_summary` 的完整统计而非可见列表，否则会漏报并把本该阻断的变更放行。
+
 ## 11. 独立评测平面
 
 [evaluation](../../src/drift_agent/evaluation/) 不参与普通 Agent 请求：
