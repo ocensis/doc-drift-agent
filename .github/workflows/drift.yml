@@ -60,8 +60,11 @@ jobs:
         with:
           base: ${{ github.event.pull_request.base.sha }}
           semantic: "true"
-          # Semantic findings are advisory here: recall is still being measured
-          # (docs/evals), so they annotate rather than block.
+          # Semantic findings annotate rather than block. The structural job
+          # above blocks because its findings are provable from the AST alone;
+          # this one asks a model to judge prose, and its recall and precision
+          # are not settled. Blocking on a detector whose own accuracy is
+          # unmeasured would spend other people's time on our uncertainty.
           fail-on-drift: "false"
           upload-sarif: "false"
           version: .

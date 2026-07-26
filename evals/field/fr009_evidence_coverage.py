@@ -11,8 +11,8 @@ measured coverage and measured recall agree, the model is not the bottleneck.
 Usage:
     python evals/field/fr009_evidence_coverage.py \
         --fixture path/to/fixture \
-        --ground-truth docs/field-reports/.../eval-ground-truth.json \
-        --expectations docs/field-reports/.../eval-evidence-expectations.json
+        --ground-truth path/to/ground-truth.json \
+        --expectations path/to/expectations.json
 """
 
 from __future__ import annotations

@@ -64,7 +64,7 @@ python evals/field/fr009_agent_baseline.py --fixture ... --ground-truth ... \
 ```bash
 # 证据覆盖率:能证明漂移的代码文件有没有进证据集 = 召回天花板
 python evals/field/fr009_evidence_coverage.py --fixture ... --ground-truth ... \
-  --expectations docs/field-reports/.../eval-evidence-expectations.json
+  --expectations path/to/expectations.json
 
 # 证据集中度:某个大文件是否成了大多数段落的证据 = 过拟合信号
 python evals/field/section_evidence_health.py --fixture ...
