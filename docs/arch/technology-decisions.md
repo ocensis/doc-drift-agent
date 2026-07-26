@@ -118,6 +118,26 @@ Stage 4 复用 12 个 subject-neutral portable case 做 Codex/Drift Agent paired
 
 Scorer 从原始 workspace/stream/public result 计算 neutral finding、changed bytes、abstention 和完整性。未知 telemetry 标为 `not_measured` 或 `accounting_incomplete`，不会伪造成 0、PASS 或精确费用。真实 run 需要单独授权且不自动 retry。
 
+### ADR-011：只有 contradiction 能阻断合并
+
+**状态：采用（2026-07-26）。**
+
+一条 finding 的 `reason_code` 说的是两件不同的事之一：文档与代码矛盾，或者检测器无法为这条声明建立确定性锚点。只有前者是被检仓库的缺陷。`is_advisory_reason` 按词元而非前缀判定，因为同一语义在 detector 里有三种拼法：`unsupported.literal`、`ambiguity.symbol`、`semantic.claim_unsupported`。
+
+不做这个区分，门禁无法被任何人接入：`unsupported.symbol_kind` 对每一个带装饰器的公开函数各报一条，本仓库 `src/` 下有 153 个这样的方法，`drift_agent.cli` 的 15 个 Typer 命令全部中招，且写多少文档都消不掉。
+
+**advisory 是"不阻断"，不是"不报告"**：它照样进 SARIF（`note` 而非 `error`）、job summary 和 `bundle.json`。退出码仍然只回答"有没有 finding"；能否阻断由新增的 `blocking-count` 输出决定，而不是由退出码或检测器决定——这是 ADR-009 那条"adapter 只做边界"的直接推论：门禁负责报告，workflow 负责决策。计数解析不出来时 policy 步骤失败而不是当作 0，因为跑挂了的 run 不能冒充"什么都没发现"。
+
+### ADR-012：以 composite action 发布，两个可变指针都钉到 tag
+
+**状态：采用（2026-07-26）。**
+
+接入面是仓库根的 `action.yml`，把 `ci check`、SARIF 上传、job summary 和产物归档包成一步；原始 workflow 写法仍然可用。仓库以 Apache-2.0 公开，多出的显式专利授权对"会在别人 runner 里执行的代码"是必要的。
+
+版本面有**两个**独立的可变指针，只钉一个不够：`uses: owner/repo@ref` 决定执行哪份 action，`version:` 输入决定 uvx 装哪个 Python 包。二者都默认指向发布 tag；`v0` 随 v0.x 移动，`v0.1.0` 不可变。
+
+跳过判断必须发生在安装任何工具链之前。分支首次 push 报告全零 before SHA，此时没有可比范围——但若 uv 已安装却从未使用，`setup-uv` 的 post 步骤会因缺少 cache 目录失败并拖红整个 job，接入方第一次 push 看到的就是一个红叉。
+
 ## 4. Reference 方案迁移表
 
 早期材料位于 [docs/reference](../reference/)。以下表格只说明决策演进，不修改历史原文。
@@ -166,6 +186,21 @@ Scorer 从原始 workspace/stream/public result 计算 neutral finding、changed
 | Doc Detective、pydoclint、interrogate | 竞品/基线调研，当前未作为 runtime 或 benchmark dependency |
 
 因此“调研过”不等于“已集成”。当前评测采用 project-authored fixture 与历史 commit interval 双来源，并冻结 provenance、license、hash 和 oracle。
+
+### 语料按可公开性分层（2026-07-26）
+
+仓库转为公开后，评测材料按“靶子是否可公开”分成两层，这条界线决定什么随项目发布：
+
+| 层 | 靶子 | 是否发布 |
+| --- | --- | --- |
+| `structural-v1`（8 例）、`stage3-v1`（10 例） | 公开上游 commit 与本项目自撰 fixture | 是，`tests/e2e/` 可离线重放 |
+| FR-009 语义 section 漂移基准 | 非公开仓库的冻结 snapshot | 否 |
+
+第二层连同其逐次迭代台账、field report 与配套 spec 一并从仓库历史中移除，`evals/field/` 的 harness 保留但与基准解耦，靶子需自备。**这不是能力缺失而是发布边界**，README 与 `docs/spec/README.md` 都显式说明缺什么、为什么缺，避免读者把“看不到”读成“没做过”。
+
+**公开层的 provenance 必须按 manifest 陈述，不能按 case id 陈述。** 18 个案例里只有 3 个是 `provenance.kind = historical`（encode/httpx、pydantic/pydantic、Textualize/rich），其余 15 个是 `project_authored`，repository 为 `project://doc-code-drift-agent`。命名前缀会误导：三个 `click.*` 案例全部自撰，语料内没有任何真实 Click 来源。这条本身是一次实测纠正——旧 README 长期写作“Click、HTTPX、Pydantic、Rich 的 8 个结构评测案例”，直到有人翻进 manifest 才发现 id 前缀不追踪来源。
+
+合规断言也要按套件分别陈述：`structural-v1` 断言 `model_calls == 0` 且 `network_calls == 0`；`stage3-v1` 断言 `model_calls == 5`（3 个语义修复案例走脚本化响应），其零模型保证是范围更窄的 `executable_zero_model_compliance`。两套都断言 `offline_compliance` 与两次重放投影逐字节相等。价值不在通过率，而在这些断言：一个会静默联网、结果不稳、或模型用量对不上账的检测器，分数再高也不构成证据。
 
 ## 7. 主要决策来源
 

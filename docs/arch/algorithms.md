@@ -306,6 +306,16 @@ Run lifecycle 也作为数据完整性算法被验证：check 必须拥有固定
 
 统一映射为退出码 `0/1/2`，避免 CLI 和 CI 各自解释状态。
 
+### severity：与 status 正交的第二次分类
+
+status 只看 disposition，不看 finding 说了什么。是否允许阻断合并由 reason_code 单独决定：
+
+1. 把 reason_code 按非字母数字切成词元；
+2. 命中 `unsupported` / `ambiguity` / `ambiguous` 任一者 → advisory，否则 blocking；
+3. 空 reason_code 视为 blocking——"没说明理由"不能成为免于阻断的依据。
+
+按词元而非前缀，是因为同一语义有 `unsupported.literal`、`ambiguity.symbol`、`semantic.claim_unsupported` 三种拼法。SARIF 渲染顺序为：`fixed` → `note`；advisory → `note`；`detected` → `warning`；其余 → `error`。因此 advisory 的**下限保证**是永不呈现为 `error`，而 blocking 按 disposition 落在 `warning` 或 `error`——blocking 不等于 `error`。
+
 ## 14. Stage 4 对照评测算法
 
 评测代码位于 [evaluation](../../src/drift_agent/evaluation/)，与普通 Agent runtime 隔离。
