@@ -73,7 +73,29 @@ outputs:
 runs:
   using: composite
   steps:
+    # Decided before anything is installed. A branch's first push reports an
+    # all-zero "before" SHA, and a tag or manual dispatch has none at all; there
+    # is no committed range to compare against. Resolving that here rather than
+    # inside the gate keeps the toolchain out of the skip path -- setup-uv's
+    # post-job step fails the whole job if it is installed but never used,
+    # which is exactly what an adopter hits on their very first push.
+    - name: Resolve the baseline revision
+      id: resolve
+      shell: bash
+      env:
+        DRIFT_BASE: ${{ inputs.base != '' && inputs.base || github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        if test -z "$DRIFT_BASE" || test "$DRIFT_BASE" = "0000000000000000000000000000000000000000"; then
+          echo "::notice::no base revision for this event; nothing to compare against"
+          echo "skip=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+        fi
+        echo "base=$DRIFT_BASE" >> "$GITHUB_OUTPUT"
+
     - name: Install uv
+      if: steps.resolve.outputs.skip != 'true'
       uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
       with:
         python-version: "3.13"
@@ -84,7 +106,8 @@ runs:
       env:
         DRIFT_SOURCE: ${{ inputs.version }}
         DRIFT_REPO: ${{ inputs.repo }}
-        DRIFT_BASE: ${{ inputs.base != '' && inputs.base || github.event.pull_request.base.sha }}
+        DRIFT_SKIP: ${{ steps.resolve.outputs.skip }}
+        DRIFT_BASE: ${{ steps.resolve.outputs.base }}
         DRIFT_SEMANTIC: ${{ inputs.semantic }}
         DRIFT_ARTIFACTS: ${{ runner.temp }}/drift-agent
         DRIFT_STATE: ${{ runner.temp }}/drift-agent-state
@@ -102,11 +125,10 @@ runs:
           } >> "$GITHUB_OUTPUT"
         }
 
-        # A branch's first push reports an all-zero "before" SHA, and a tag or
-        # manual dispatch has none at all. There is no committed range to check,
-        # which is not a finding and not a malfunction.
-        if test -z "$DRIFT_BASE" || test "$DRIFT_BASE" = "0000000000000000000000000000000000000000"; then
-          echo "::notice::no base revision for this event; nothing to compare against"
+        # No committed range to check is not a finding and not a malfunction.
+        # The resolve step already said so and, crucially, already kept uv from
+        # being installed; this step still has to publish the outputs.
+        if test "$DRIFT_SKIP" = "true"; then
           emit 0 skipped 0
           exit 0
         fi
