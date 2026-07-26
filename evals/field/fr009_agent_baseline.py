@@ -26,7 +26,7 @@ whether the task is solvable.
 
 Usage:
     python evals/field/fr009_agent_baseline.py \
-        --fixture evals/datasets/field/react-refactor-v1 \
+        --fixture path/to/fixture \
         --ground-truth docs/field-reports/.../eval-ground-truth.json \
         --repeats 3 --mode unconstrained --dump /tmp/baseline.json
 """

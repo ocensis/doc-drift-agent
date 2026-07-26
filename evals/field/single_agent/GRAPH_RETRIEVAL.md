@@ -76,7 +76,7 @@ After loading the OpenRouter environment and setting the two binary paths, run:
 
 ```bash
 .venv/bin/python evals/field/single_agent/run_graph_ablation.py \
-  --fixture evals/datasets/field/react-refactor-v1 \
+  --fixture path/to/fixture \
   --output-dir /tmp/fr009-graph-v1
 ```
 
@@ -91,7 +91,7 @@ and launch only the six treatments:
 
 ```bash
 .venv/bin/python evals/field/single_agent/run_graph_ablation.py \
-  --fixture evals/datasets/field/react-refactor-v1 \
+  --fixture path/to/fixture \
   --output-dir /tmp/fr009-graph-v1 \
   --agents codegraph_agent gitnexus_agent
 ```
@@ -113,7 +113,7 @@ artifact paths and the ground-truth path:
 
 ```bash
 .venv/bin/python evals/field/single_agent/score_graph_ablation.py \
-  --ground-truth docs/field-reports/2026-07-20-customer-agent-react-refactor/eval-ground-truth.json \
+  --ground-truth path/to/ground-truth.json \
   --artifact /tmp/fr009-v3-default-pair-1.json \
   --artifact /tmp/fr009-graph-v1/pair-1-codegraph_agent.json \
   --artifact /tmp/fr009-graph-v1/pair-1-gitnexus_agent.json \

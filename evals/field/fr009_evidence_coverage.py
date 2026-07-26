@@ -10,7 +10,7 @@ measured coverage and measured recall agree, the model is not the bottleneck.
 
 Usage:
     python evals/field/fr009_evidence_coverage.py \
-        --fixture evals/datasets/field/react-refactor-v1 \
+        --fixture path/to/fixture \
         --ground-truth docs/field-reports/.../eval-ground-truth.json \
         --expectations docs/field-reports/.../eval-evidence-expectations.json
 """

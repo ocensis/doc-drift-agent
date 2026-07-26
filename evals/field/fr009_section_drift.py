@@ -10,7 +10,7 @@ Before trusting any number this produces, read docs/evals/eval-validity-checklis
 
 Usage (frozen fixture — the stable, comparable mode):
     python evals/field/fr009_section_drift.py \
-        --fixture evals/datasets/field/react-refactor-v1 \
+        --fixture path/to/fixture \
         --ground-truth docs/field-reports/.../eval-ground-truth.json \
         --repeats 5 --max-model-calls 56 --timeout-seconds 5400 \
         --dump-findings /tmp/findings.json

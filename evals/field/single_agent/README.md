@@ -73,7 +73,7 @@ set -a && source .env && set +a
 unset LANGFUSE_PUBLIC_KEY LANGFUSE_SECRET_KEY LANGFUSE_BASE_URL
 
 .venv/bin/python evals/field/single_agent/AGENT_FILE \
-  --fixture evals/datasets/field/react-refactor-v1 \
+  --fixture path/to/fixture \
   --repeats 1 --pair-id PAIR_ID \
   --output ARTIFACT
 ```
@@ -107,7 +107,7 @@ ended, run the local scorer. The expected scorer interface is:
 
 ```bash
 .venv/bin/python evals/field/single_agent/score_ablation.py \
-  --ground-truth docs/field-reports/2026-07-20-customer-agent-react-refactor/eval-ground-truth.json \
+  --ground-truth path/to/ground-truth.json \
   --artifact /tmp/fr009-v3-seeded-pair-1.json \
   --artifact /tmp/fr009-v3-default-pair-1.json \
   --artifact /tmp/fr009-v3-default-pair-2.json \

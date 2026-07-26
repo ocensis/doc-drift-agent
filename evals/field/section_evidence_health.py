@@ -12,7 +12,7 @@ file), which will not transfer to the next one.
 
 Usage:
     python evals/field/section_evidence_health.py --repo . --baseline <rev>
-    python evals/field/section_evidence_health.py --fixture evals/datasets/field/react-refactor-v1
+    python evals/field/section_evidence_health.py --fixture path/to/fixture
 """
 
 from __future__ import annotations

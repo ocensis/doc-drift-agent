@@ -2,8 +2,10 @@
 
 散文/图表级语义漂移检测(FR-009)的评测工具集。所有工具共享一个 harness 库,用**同一个评分函数**打分,保证工具、基线、探针三方的数字可直接比较。
 
-> **开跑前必读**:[评测有效性检查清单](../../docs/evals/eval-validity-checklist.md)——八条,每条对应一次真实的"跑了半天发现方向错了"。先校准尺子,再读数。
-> **背景与逐次迭代**:[docs/evals](../../docs/evals/README.md)。
+> **本目录只有工具,没有基准。** FR-009 的冻结基准建立在非公开仓库上,不随本仓库发布,
+> 所以下面命令里的 `path/to/fixture` 与 `path/to/ground-truth.json` 需要你自己提供:
+> fixture 是一个含 `manifest.json` 与 `snapshot.bundle` 的目录,ground truth 是一份标注
+> 了应被检出的 `doc` + `line` 列表的 JSON。评分函数与 harness 本身与基准无关。
 
 ## 结构
 
@@ -35,8 +37,8 @@ section_evidence_health.py  模型无关探针:证据集中度(过拟合体检,�
 ```bash
 set -a && source .env && set +a          # OPENROUTER_API_KEY
 python evals/field/fr009_section_drift.py \
-  --fixture evals/datasets/field/react-refactor-v1 \
-  --ground-truth docs/field-reports/2026-07-20-customer-agent-react-refactor/eval-ground-truth.json \
+  --fixture path/to/fixture \
+  --ground-truth path/to/ground-truth.json \
   --repeats 5 --max-model-calls 56 --timeout-seconds 5400 \
   --dump-findings /tmp/findings.json
 ```
