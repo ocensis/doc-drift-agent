@@ -7,8 +7,13 @@
 # be installed from a clone of this repository, or if the two pointers disagree.
 name: Adoption smoke
 
+# Runs when a release ref moves, not on every pull request: this job resolves
+# `@v0`, so on a pull request it would test the already-published code and
+# could not catch a regression in the change under review. What it does catch
+# is a release that nobody can install.
 on:
-  pull_request:
+  push:
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
