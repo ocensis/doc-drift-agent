@@ -5,8 +5,8 @@ findings against the same ground truth with the same one-to-one
 section-containment matcher, and reports the same union/per-class shape. That
 shared logic lives here so the runners stay thin and — critically — so the
 tool under test and its competitive baseline are scored by *identical* code,
-which is a hard requirement for the comparison to mean anything (see
-docs/evals/eval-validity-checklist.md §6).
+which is a hard requirement for the comparison to mean anything. (The checklist
+that rule came from is not published; see the note in this directory's README.)
 
 Run any runner directly (`python evals/field/<runner>.py ...`); each inserts
 its own directory on sys.path so `from _harness import ...` resolves both when

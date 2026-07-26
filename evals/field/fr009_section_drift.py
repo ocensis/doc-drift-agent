@@ -6,12 +6,12 @@ union recall (overall and per class) as the primary number, unconsumed
 findings as extras. Model variance across rounds is expected, so union over
 repeats is what matters — see union_over_repeats in _harness.
 
-Before trusting any number this produces, read docs/evals/eval-validity-checklist.md.
+These numbers are only comparable against a fixture you control; see README.md.
 
 Usage (frozen fixture — the stable, comparable mode):
     python evals/field/fr009_section_drift.py \
         --fixture path/to/fixture \
-        --ground-truth docs/field-reports/.../eval-ground-truth.json \
+        --ground-truth path/to/ground-truth.json \
         --repeats 5 --max-model-calls 56 --timeout-seconds 5400 \
         --dump-findings /tmp/findings.json
 
