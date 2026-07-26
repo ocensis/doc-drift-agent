@@ -239,6 +239,10 @@ group 会回滚。该隔离用于约束正常项目测试，不等价于针对�
 
 语义修复沿用同一窄边界。模型响应必须满足 extra-forbid 的 `SemanticRepairProposal`，只能给出 `decision`、单个 literal `replacement_text`、`confidence` 和有界 `rationale`；path、span、command、diff 和 Python 写入均不由模型决定。首次调用固定使用 fast profile；只有 fast 低置信或第一次 patch 验证失败才升级 strong。每个 finding 最多两次 patch attempt，结构化响应失败最多允许一次 schema-only retry，后者计 model usage 但不计 patch attempt。每次写入仍受 source hash、exact text、trusted literal span、workspace lock 和 `WorkspaceTransaction` 保护，并须通过 semantic 重检、无新增 finding、required executable validation、最终 closure 与发布前 snapshot 检查；失败 attempt 会回滚，第二次失败后保守 abstain。
 
+## License
+
+[Apache-2.0](LICENSE)。选它而不是 MIT 是因为多一条显式专利授权——这个仓库同时是一个会在别人 runner 里执行的 GitHub Action,接入方需要的授权范围比"读代码"更宽。
+
 ## 评测重放
 
 离线重放两套冻结评测：
