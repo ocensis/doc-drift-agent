@@ -1,0 +1,47 @@
+# Proves the path the README actually tells a stranger to use.
+#
+# Every other workflow here runs `uses: ./` with `version: .`, which exercises
+# the working tree and says nothing about whether a third party can adopt this.
+# This one resolves the action from the published tag and lets `version` fall
+# back to its default, so it fails if the tag is missing, if the package cannot
+# be installed from a clone of this repository, or if the two pointers disagree.
+name: Adoption smoke
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
+jobs:
+  as-an-outsider:
+    name: uses:@v0, default version
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - id: drift
+        uses: ocensis/doc-drift-agent@v0
+        with:
+          base: ${{ github.event.pull_request.base.sha }}
+          upload-sarif: "false"
+
+      - name: The action must have answered
+        shell: bash
+        env:
+          STATUS: ${{ steps.drift.outputs.status }}
+          EXIT: ${{ steps.drift.outputs.exit-code }}
+          BLOCKING: ${{ steps.drift.outputs.blocking-count }}
+        run: |
+          set -euo pipefail
+          echo "status=$STATUS exit=$EXIT blocking=$BLOCKING"
+          # An outsider who cannot install the package still gets a green job
+          # unless the outputs are checked: the gate would report `failed`.
+          test "$STATUS" != "failed" && test "$STATUS" != "stale"
+          printf '%s' "$BLOCKING" | grep -Eq '^[0-9]+$'
+          echo "resolved from the published tag, not the working tree"
